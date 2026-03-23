@@ -1,0 +1,665 @@
+/* ============================================================
+   RideMart — Rental Booking Wizard
+   Premium dark-theme multi-step booking experience
+   ============================================================ */
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.rb-page {
+  min-height: 100vh;
+  background: var(--bg-main);
+  padding: 2rem 0 4rem;
+}
+
+.rb-page.rb-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--text-muted);
+}
+
+.rb-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255,255,255,0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: rb-spin 0.8s linear infinite;
+}
+
+@keyframes rb-spin { to { transform: rotate(360deg); } }
+
+.rb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ── Back button ──────────────────────────────────────────── */
+.rb-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+
+.rb-back-btn:hover { color: var(--text-white); }
+
+/* ── Two-column layout ────────────────────────────────────── */
+.rb-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .rb-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.rb-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 100px;
+}
+
+/* ── Car card ─────────────────────────────────────────────── */
+.rb-car-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.rb-car-img-wrap {
+  position: relative;
+  aspect-ratio: 16/9;
+}
+
+.rb-car-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rb-premium-tag {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--primary);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+}
+
+.rb-car-info {
+  padding: 1.25rem;
+}
+
+.rb-car-brand {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.rb-car-model {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-white);
+  margin: 0 0 0.6rem;
+}
+
+.rb-car-year {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.rb-car-specs {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.rb-car-specs span { display: flex; align-items: center; gap: 5px; }
+
+.rb-car-location {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 0.75rem;
+}
+
+.rb-car-rate {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.rb-rate-amount {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.rb-rate-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ── Price summary box ────────────────────────────────────── */
+.rb-price-summary {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.rb-price-summary h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.rb-price-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.rb-price-total {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* ── Trust badges ─────────────────────────────────────────── */
+.rb-trust {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rb-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.rb-trust-item svg { color: #10b981; }
+
+/* ── Main wizard panel ────────────────────────────────────── */
+.rb-main {
+  background: var(--bg-surface);
+  border-radius: var(--radius-2xl);
+  padding: 2rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* ── Step bar ─────────────────────────────────────────────── */
+.rb-step-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.rb-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.rb-step-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: var(--bg-main);
+  color: var(--text-muted);
+  border: 2px solid rgba(255,255,255,0.1);
+  transition: all 0.35s;
+}
+
+.rb-step--active .rb-step-circle {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(194,24,7,0.2);
+}
+
+.rb-step--done .rb-step-circle {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.rb-step-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.rb-step--active .rb-step-label { color: var(--text-white); }
+
+.rb-step-line {
+  flex: 1;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  margin: 0 0.5rem;
+  margin-bottom: 1.2rem;
+  transition: background 0.35s;
+}
+
+.rb-step-line--done { background: #10b981; }
+
+/* ── Error banner ─────────────────────────────────────────── */
+.rb-error {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Section headings ─────────────────────────────────────── */
+.rb-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-white);
+}
+
+.rb-section-sub {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-top: -0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Form fields ──────────────────────────────────────────── */
+
+.rb-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .rb-form-row { grid-template-columns: 1fr; }
+}
+
+.rb-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rb-form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rb-form-group input {
+  padding: 0.75rem 1rem;
+  background: var(--bg-main);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-white);
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.rb-form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.rb-form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(50%);
+}
+
+/* ── Duration pill ────────────────────────────────────────── */
+.rb-duration-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(194,24,7,0.12);
+  border: 1px solid rgba(194,24,7,0.3);
+  color: #fca5a5;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* ── Checkbox group ───────────────────────────────────────── */
+.rb-checkbox-group {
+  margin-top: 0.5rem;
+}
+
+.rb-checkbox-group label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.rb-checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+  margin-top: 1px;
+}
+
+/* ── Add-on cards ─────────────────────────────────────────── */
+.rb-addons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .rb-addons-grid { grid-template-columns: 1fr; }
+}
+
+.rb-addon-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem;
+  background: var(--bg-main);
+  border: 2px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rb-addon-card:hover {
+  border-color: rgba(194,24,7,0.4);
+  background: rgba(194,24,7,0.06);
+}
+
+.rb-addon-card--active {
+  border-color: var(--primary);
+  background: rgba(194,24,7,0.1);
+}
+
+.rb-addon-icon {
+  font-size: 1.3rem;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.rb-addon-text strong {
+  font-size: 0.88rem;
+  color: var(--text-white);
+  display: block;
+}
+
+.rb-addon-text p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.rb-addon-price {
+  margin-left: auto;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.rb-addon-check { color: #10b981; font-size: 0.9rem; }
+
+/* ── Booking summary box ──────────────────────────────────── */
+.rb-booking-summary {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.rb-booking-summary h4 {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+}
+
+.rb-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+.rb-summary-row strong { color: var(--text-white); }
+
+.rb-summary-divider {
+  border: none;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  margin: 0.75rem 0;
+}
+
+.rb-summary-total {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary) !important;
+  padding-top: 0.25rem;
+}
+
+.rb-summary-total strong { color: var(--primary) !important; }
+
+/* ── Receipt (Step 3) ─────────────────────────────────────── */
+.rb-receipt {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.rb-receipt-header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-white);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.rb-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.rb-receipt-row strong { color: var(--text-white); }
+
+.rb-receipt-divider {
+  height: 2px;
+  background: rgba(255,255,255,0.07);
+  margin: 0;
+}
+
+.rb-receipt-total {
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: rgba(194,24,7,0.08);
+}
+
+.rb-receipt-total strong { color: var(--primary) !important; }
+
+/* ── Payment note ─────────────────────────────────────────── */
+.rb-payment-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Pay button ───────────────────────────────────────────── */
+.rb-pay-btn {
+  width: 100%;
+  padding: 1.1rem;
+  background: linear-gradient(135deg, var(--primary) 0%, #7f0000 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.rb-pay-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(194,24,7,0.4);
+}
+
+.rb-pay-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.rb-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: rb-spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+/* ── Navigation buttons ───────────────────────────────────── */
+.rb-nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.rb-btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-main);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rb-btn-back:hover {
+  border-color: rgba(255,255,255,0.25);
+  color: var(--text-white);
+}
+
+.rb-btn-next {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rb-btn-next:hover {
+  background: var(--primary-hover, #a01505);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(194,24,7,0.35);
+}

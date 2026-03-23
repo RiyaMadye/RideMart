@@ -1,0 +1,62 @@
+.payment-status-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  background-color: var(--bg-main);
+  padding: 2rem;
+}
+
+.status-card {
+  background: var(--bg-surface);
+  padding: 3rem;
+  border-radius: var(--radius-xl);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-icon {
+  font-size: 5rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-card.success .status-icon {
+  color: #22c55e; /* Green */
+}
+
+.status-card.failure .status-icon {
+  color: #ef4444; /* Red */
+}
+
+.status-card h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.status-card p {
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.status-card .detail {
+  font-size: 0.9rem;
+  background: var(--bg-main);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+}
+
+.status-card .detail span {
+  font-family: monospace;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}

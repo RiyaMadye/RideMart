@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isSeller(sellerEmail) {
+      return isSignedIn() && request.auth.token.email == sellerEmail;
+    }
+
+    // Car Listings
+    match /cars/{carId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSeller(resource.data.sellerEmail);
+    }
+    
+    match /rentals/{rentalId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSeller(resource.data.sellerEmail);
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+    }
+
+    // Cart
+    match /cart/{cartId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // User Data - ALLOW READ FOR PASSWORD RESET
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && request.auth.token.email == resource.data.userEmail;
+    }
+
+    // Password Reset Requests - MUST ALLOW UNAUTHENTICATED CREATE
+    match /password_reset_requests/{document=**} {
+      allow create: if true;
+      allow read, write: if false; 
+    }
+
+    // Activity Logs - MUST ALLOW UNAUTHENTICATED CREATE
+    match /activity_logs/{document=**} {
+      allow create: if true;
+      allow read, write: if false;
+    }
+  }
+}

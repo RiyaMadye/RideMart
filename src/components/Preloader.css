@@ -1,0 +1,39 @@
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 9999;
+}
+
+.road {
+  width: 80%;
+  height: 80px;
+  border-bottom: 4px dashed white;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.car {
+  font-size: 50px;
+  position: absolute;
+  left: -60px;
+  animation: drive 2s linear infinite;
+}
+
+@keyframes drive {
+  0% {
+    left: -60px;
+  }
+  100% {
+    left: 100%;
+  }
+}

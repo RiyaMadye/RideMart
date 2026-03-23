@@ -1,0 +1,126 @@
+.monitor-page {
+  padding: var(--space-xl) 0;
+  min-height: 80vh;
+  background-color: var(--bg-main);
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.filter-tabs .tab {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-tabs .tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.search-box {
+  position: relative;
+  min-width: 300px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  padding-left: 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-main);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.logs-table-container {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.logs-table th,
+.logs-table td {
+  padding: var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.logs-table th {
+  background: var(--bg-main);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.log-time {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-auth { background: #e0f2fe; color: #0284c7; }
+.badge-listing { background: #dcfce7; color: #16a34a; }
+.badge-booking { background: #f3e8ff; color: #9333ea; }
+.badge-security { background: #fee2e2; color: #dc2626; }
+
+.detail-pill {
+  display: inline-block;
+  font-size: 0.8rem;
+  background: var(--bg-main);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 5px;
+  border: 1px solid var(--border-color);
+}
+
+.alert-icon {
+  color: #dc2626;
+  margin-right: 5px;
+}

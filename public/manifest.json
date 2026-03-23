@@ -1,0 +1,15 @@
+{
+  "short_name": "RideMart",
+  "name": "RideMart - Buy, Sell & Rent Cars",
+  "icons": [
+    {
+      "src": "logo-brand.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#c21807",
+  "background_color": "#0a0a0f"
+}
