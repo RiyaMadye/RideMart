@@ -69,10 +69,21 @@ function Cart() {
     }
 
     const totalAmount = calculateTotal();
+    const razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
+
+    if (!razorpayKey) {
+      alert("⚠️ Payment gateway Key ID is missing. Please add it to your environment variables.");
+      return;
+    }
+
+    if (!totalAmount || isNaN(totalAmount) || totalAmount <= 0) {
+      alert("⚠️ Your cart total is zero or invalid. Add items to your cart before proceeding.");
+      return;
+    }
 
     const options = {
-      key: process.env.REACT_APP_RAZORPAY_KEY_ID, // Get this from your .env file
-      amount: totalAmount * 100, // Amount in the smallest currency unit (paise)
+      key: razorpayKey,
+      amount: Math.round(totalAmount * 100), // Amount in the smallest currency unit (paise)
       currency: "INR",
       name: "RideMart",
       description: `Payment for ${cartItems.length} car(s)`,

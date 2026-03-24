@@ -73,14 +73,27 @@ function CarDetails() {
     }
 
     setIsProcessing(true);
-    const isRental = !!car.dailyRate;
-    // For rentals, default to 1 day. For purchases, use the car price.
     const amount = isRental ? car.dailyRate : car.price;
+    const razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
+
+    // --- ROBUSTNESS CHECKS ---
+    if (!razorpayKey) {
+      alert("⚠️ Payment gateway Key ID is missing. If you are the owner, please add REACT_APP_RAZORPAY_KEY_ID to your environment variables.");
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+      alert("⚠️ Invalid amount for this vehicle. Please ensure the price is correctly listed.");
+      setIsProcessing(false);
+      return;
+    }
+
     const description = isRental ? `1-Day booking for ${car.brand} ${car.model}` : `Purchase of ${car.brand} ${car.model}`;
 
     const options = {
-      key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-      amount: amount * 100,
+      key: razorpayKey,
+      amount: Math.round(amount * 100), // Ensure it's an integer
       currency: "INR",
       name: "RideMart",
       description: description,
