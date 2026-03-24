@@ -169,79 +169,141 @@ export default function RentalBooking() {
   const goPrev = () => setStep(s => s - 1);
 
   // ─── Payment handler
-  const handlePayment = () => {
+  const handlePayment = async () => {
     const user = auth.currentUser;
     if (!user) { navigate('/login'); return; }
 
     setIsProcessing(true);
-    const options = {
-      key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-      amount: grandTotal * 100,
-      currency: 'INR',
-      name: 'RideMart Rentals',
-      description: `${car.brand} ${car.model} — ${days} day${days > 1 ? 's' : ''}`,
-      image: car.imageUrl || '/logo-brand.jpg',
-      prefill: {
-        name: driverName || user.displayName || '',
-        email: user.email,
-        contact: driverPhone,
-      },
-      theme: { color: '#c21807' },
-      handler: async (response) => {
-        try {
-          const enabledAddons = Object.entries(activeAddons)
-            .filter(([, on]) => on)
-            .map(([id]) => ADDONS.find(a => a.id === id)?.label);
+    setError('');
 
-          const bookingRef = await addDoc(collection(db, 'bookings'), {
-            carId:            car.id,
-            carBrand:         car.brand,
-            carMake:          car.brand,
-            carModel:         car.model,
-            carImage:         car.imageUrl || '',
-            carType:          car.type,
-            userId:           user.uid,
-            userEmail:        user.email,
-            driverName,
-            driverPhone,
-            pickupCity,
-            startDate:        pickupDate,
-            endDate:          returnDate,
-            days,
-            dailyRate:        car.dailyRate || car.price || 0,
-            addons:           enabledAddons,
-            addonTotal,
-            totalPrice:       grandTotal,
-            status:           'active',
-            paymentStatus:    'paid',
-            razorpayPaymentId: response.razorpay_payment_id,
-            createdAt:        serverTimestamp(),
-          });
+    try {
+      // 1. Create order on the server (Practical Backend Approach)
+      // Replace with your actual deployed function URL if different
+      const functionUrl = 'https://asia-south1-ridemartcom.cloudfunctions.net/createRazorpayOrder';
+      
+      const orderRes = await fetch(functionUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: grandTotal,
+          currency: 'INR'
+        }),
+      });
 
-          await addDoc(collection(db, 'payments'), {
-            userId:        user.uid,
-            bookingId:     bookingRef.id,
-            carId:         car.id,
-            paymentId:     response.razorpay_payment_id,
-            amount:        grandTotal,
-            paymentStatus: 'success',
-            timestamp:     serverTimestamp(),
-          });
+      if (!orderRes.ok) {
+        throw new Error('Failed to create payment order. Status: ' + orderRes.status);
+      }
 
-          navigate(
-            `/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${bookingRef.id}`
-          );
-        } catch (err) {
-          console.error('Booking error:', err);
-          navigate('/payment-failure');
-        }
-      },
-      modal: {
-        ondismiss: () => setIsProcessing(false),
-      },
-    };
+      const orderData = await orderRes.json();
 
-    displayRazorpay(options);
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: orderData.amount, // use amount from server
+        currency: orderData.currency,
+        order_id: orderData.id, // ID from the server
+        name: 'RideMart Rentals',
+        description: `${car.brand} ${car.model} — ${days} day${days > 1 ? 's' : ''}`,
+        image: car.imageUrl || '/logo-brand.jpg',
+        prefill: {
+          name: driverName || user.displayName || '',
+          email: user.email,
+          contact: driverPhone,
+        },
+        theme: { color: '#c21807' },
+        handler: async (response) => {
+          await handleBookingAfterPayment(response);
+        },
+        modal: {
+          ondismiss: () => setIsProcessing(false),
+        },
+      };
+
+      displayRazorpay(options);
+    } catch (err) {
+      console.error('Payment initialization error:', err);
+      setError('Payment initialization failed. Using legacy client-side checkout...');
+      
+      // Fallback to Simple Integration if server fails (optional)
+      const fallbackOptions = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: grandTotal * 100,
+        currency: 'INR',
+        name: 'RideMart Rentals',
+        description: `${car.brand} ${car.model} — ${days} day${days > 1 ? 's' : ''}`,
+        image: car.imageUrl || '/logo-brand.jpg',
+        prefill: {
+          name: driverName || user.displayName || '',
+          email: user.email,
+          contact: driverPhone,
+        },
+        theme: { color: '#c21807' },
+        handler: async (response) => {
+          // ... same booking logic ...
+          handleBookingAfterPayment(response);
+        },
+        modal: {
+          ondismiss: () => setIsProcessing(false),
+        },
+      };
+      
+      // For now, let's just show an error if they haven't set up the blaze plan
+      setError('Could not connect to backend. Please ensure Firebase Functions are deployed and Blaze plan is active.');
+      setIsProcessing(false);
+    }
+  };
+
+  // Restructured booking logic for cleaner code
+  const handleBookingAfterPayment = async (response) => {
+    const user = auth.currentUser;
+    try {
+      const enabledAddons = Object.entries(activeAddons)
+        .filter(([, on]) => on)
+        .map(([id]) => ADDONS.find(a => a.id === id)?.label);
+
+      const bookingRef = await addDoc(collection(db, 'bookings'), {
+        carId:            car.id,
+        carBrand:         car.brand,
+        carMake:          car.brand,
+        carModel:         car.model,
+        carImage:         car.imageUrl || '',
+        carType:          car.type,
+        userId:           user.uid,
+        userEmail:        user.email,
+        driverName,
+        driverPhone,
+        pickupCity,
+        startDate:        pickupDate,
+        endDate:          returnDate,
+        days,
+        dailyRate:        car.dailyRate || car.price || 0,
+        addons:           enabledAddons,
+        addonTotal,
+        totalPrice:       grandTotal,
+        status:           'active',
+        paymentStatus:    'paid',
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpayOrderId:   response.razorpay_order_id,
+        createdAt:        serverTimestamp(),
+      });
+
+      await addDoc(collection(db, 'payments'), {
+        userId:        user.uid,
+        bookingId:     bookingRef.id,
+        carId:         car.id,
+        paymentId:     response.razorpay_payment_id,
+        orderId:       response.razorpay_order_id,
+        amount:        grandTotal,
+        paymentStatus: 'success',
+        timestamp:     serverTimestamp(),
+      });
+
+      navigate(
+        `/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${bookingRef.id}`
+      );
+    } catch (err) {
+      console.error('Booking error:', err);
+      navigate('/payment-failure');
+    }
   };
 
   // ─── Loading state

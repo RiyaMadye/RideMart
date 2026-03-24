@@ -26,14 +26,13 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import RentalBooking from './pages/RentalBooking';
 import ForgotPassword from './pages/ForgotPassword';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
-
 function AppContent() {
-  
-
   return (
     <div className="App">
+      <ScrollToTop />
       <Navbar />
 
       <main className="main-content">
