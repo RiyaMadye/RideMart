@@ -73,6 +73,7 @@ function CarDetails() {
     }
 
     setIsProcessing(true);
+    const isRental = !!car.dailyRate;
     const amount = isRental ? car.dailyRate : car.price;
     const razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
 
