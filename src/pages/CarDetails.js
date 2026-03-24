@@ -130,10 +130,10 @@ function CarDetails() {
             timestamp: serverTimestamp(),
           });
 
-          navigate(`/payment/success?payment_id=${response.razorpay_payment_id}&order_id=${docRef.id}`);
+          navigate(`/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${docRef.id}`);
         } catch (error) {
           console.error("Error processing payment:", error);
-          navigate('/payment/failure');
+          navigate('/payment-failure');
         } finally {
           setIsProcessing(false);
         }
@@ -142,8 +142,16 @@ function CarDetails() {
       theme: { color: "#c21807" }
     };
 
-    displayRazorpay(options);
-    setIsProcessing(false);
+    try {
+      displayRazorpay(options);
+    } catch (error) {
+      console.error("Error launching Razorpay:", error);
+      setIsProcessing(false);
+    } finally {
+      // We set processing to false after the modal is triggered.
+      // Note: This happens almost immediately as displayRazorpay is not async.
+      setIsProcessing(false);
+    }
   };
 
   return (

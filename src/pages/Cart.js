@@ -110,10 +110,10 @@ function Cart() {
           await Promise.all(deletePromises);
 
           // 4. Redirect to success page
-          navigate(`/payment/success?payment_id=${response.razorpay_payment_id}&order_id=${orderRef.id}`);
+          navigate(`/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${orderRef.id}`);
         } catch (error) {
           console.error("Error processing order:", error);
-          navigate('/payment/failure');
+          navigate('/payment-failure');
         }
       },
       prefill: {

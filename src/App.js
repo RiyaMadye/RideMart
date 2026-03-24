@@ -26,10 +26,19 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import RentalBooking from './pages/RentalBooking';
 import ForgotPassword from './pages/ForgotPassword';
+import { useLocation } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
 function AppContent() {
+  const location = useLocation();
+
+  // Global cleanup: Ensure scrolling is NEVER locked on route change
+  React.useEffect(() => {
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+  }, [location.pathname]);
+
   return (
     <div className="App">
       <ScrollToTop />

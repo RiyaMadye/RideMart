@@ -1,47 +1,59 @@
 import { useEffect, useState } from 'react';
 
-// Helper function to load an external script
-const loadScript = (src) => {
-  return new Promise((resolve) => {
+// Single promise to track global script loading state
+let scriptLoadingPromise = null;
+
+const loadRazorpayScript = () => {
+  const src = 'https://checkout.razorpay.com/v1/checkout.js';
+  
+  // 1. If already loaded, return true
+  if (window.Razorpay) return Promise.resolve(true);
+  
+  // 2. If currently loading, return the existing promise
+  if (scriptLoadingPromise) return scriptLoadingPromise;
+  
+  // 3. Start a new load
+  scriptLoadingPromise = new Promise((resolve) => {
     const script = document.createElement('script');
     script.src = src;
+    script.async = true;
     script.onload = () => {
       resolve(true);
     };
     script.onerror = () => {
+      scriptLoadingPromise = null; // Reset let it retry if failed
       resolve(false);
     };
     document.body.appendChild(script);
   });
+  
+  return scriptLoadingPromise;
 };
 
-/**
- * Custom hook to handle Razorpay payment integration.
- * It loads the Razorpay SDK and provides a function to display the payment modal.
- */
 const useRazorpay = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(!!window.Razorpay);
 
   useEffect(() => {
-    const load = async () => {
-      const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-      if (!res) {
-        alert('Razorpay SDK failed to load. Are you online?');
-        return;
-      }
-      setIsLoaded(true);
-    };
-    load();
-  }, []);
+    if (!isLoaded) {
+      loadRazorpayScript().then(success => {
+        if (success) setIsLoaded(true);
+      });
+    }
+  }, [isLoaded]);
 
   const displayRazorpay = (options) => {
-    if (!isLoaded) {
-      alert('Razorpay SDK is not loaded yet.');
+    if (!window.Razorpay) {
+      alert('Razorpay SDK is not loaded yet. Please wait a moment or check your connection.');
       return;
     }
 
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
+    try {
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error("Razorpay Open Error:", error);
+      alert("Failed to open payment gateway. Please try again.");
+    }
   };
 
   return displayRazorpay;
