@@ -1,7 +1,7 @@
 import { getAuth, signOut } from "firebase/auth";
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { FaShoppingCart } from 'react-icons/fa';
 import './Navbar.css';
@@ -24,13 +24,18 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Real-time cart count
+  // Real-time cart count for current user
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'cart'), (snapshot) => {
+    if (!currentUser) {
+      setCartCount(0);
+      return;
+    }
+    const q = query(collection(db, 'cart'), where('userId', '==', currentUser.uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       setCartCount(snapshot.size);
     });
     return () => unsubscribe();
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {

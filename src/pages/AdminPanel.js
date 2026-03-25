@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { collection, deleteDoc, doc, getDoc, onSnapshot, query, orderBy, limit, addDoc, updateDoc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot, query, orderBy, limit, addDoc, updateDoc, setDoc, writeBatch, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { generateSeedData } from '../data/seedData';
 import { searchCarsAPI, mapApiSpecToFormFields } from '../utils/carsApi';
@@ -31,7 +31,7 @@ function AdminPanel() {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userFormData, setUserFormData] = useState({
-    displayName: '',
+    fullName: '',
     email: '',
     role: 'buyer',
     isVerified: false,
@@ -441,6 +441,7 @@ function AdminPanel() {
       }
     } catch (err) {
       console.error("User Action Error:", err);
+      alert(`Failed to perform action: ${err.message}. Check your Firestore rules or internet connection.`);
     }
   };
 
@@ -449,18 +450,21 @@ function AdminPanel() {
     try {
       if (editingUser) {
         await updateDoc(doc(db, 'users', editingUser.id), userFormData);
+        alert("User updated successfully!");
       } else {
         await addDoc(collection(db, 'users'), {
           ...userFormData,
-          createdAt: new Date(),
-          photoURL: `https://ui-avatars.com/api/?name=${userFormData.displayName}&background=random`
+          createdAt: serverTimestamp(),
+          photoURL: `https://ui-avatars.com/api/?name=${userFormData.fullName}&background=random`
         });
+        alert("New user created successfully!");
       }
       setIsUserModalOpen(false);
       setEditingUser(null);
-      setUserFormData({ displayName: '', email: '', role: 'buyer', isVerified: false, status: 'active' });
+      setUserFormData({ fullName: '', email: '', role: 'buyer', isVerified: false, status: 'active' });
     } catch (err) {
       console.error("Save User Error:", err);
+      alert(`Error saving user: ${err.message}. Practical fix: Ensure your Firestore Rules allow the Admin to update other users.`);
     }
   };
 
@@ -468,7 +472,7 @@ function AdminPanel() {
     if (user) {
       setEditingUser(user);
       setUserFormData({
-        displayName: user.displayName || '',
+        fullName: user.fullName || user.displayName || '',
         email: user.email || '',
         role: user.role || 'buyer',
         isVerified: user.isVerified || false,
@@ -476,7 +480,7 @@ function AdminPanel() {
       });
     } else {
       setEditingUser(null);
-      setUserFormData({ displayName: '', email: '', role: 'buyer', isVerified: false, status: 'active' });
+      setUserFormData({ fullName: '', email: '', role: 'buyer', isVerified: false, status: 'active' });
     }
     setIsUserModalOpen(true);
   };
@@ -1132,6 +1136,7 @@ function AdminPanel() {
             <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
               <option value="all">All Roles</option>
               <option value="admin">Admins</option>
+              <option value="user">Standard Users</option>
               <option value="seller">Sellers</option>
               <option value="buyer">Buyers</option>
               <option value="renter">Renters</option>
@@ -1158,7 +1163,7 @@ function AdminPanel() {
                     <div className="user-cell">
                       <img src={u.photoURL || `https://ui-avatars.com/api/?name=${u.displayName}&background=000&color=fff`} alt="" />
                       <div>
-                        <p className="u-name">{u.displayName || 'Unnamed User'}</p>
+                        <p className="u-name">{u.fullName || u.displayName || 'Unnamed User'}</p>
                         <p className="u-email">{u.email}</p>
                       </div>
                     </div>
@@ -1199,8 +1204,8 @@ function AdminPanel() {
                   <input 
                     type="text" 
                     required 
-                    value={userFormData.displayName}
-                    onChange={(e) => setUserFormData({...userFormData, displayName: e.target.value})}
+                    value={userFormData.fullName}
+                    onChange={(e) => setUserFormData({...userFormData, fullName: e.target.value})}
                   />
                 </div>
                 <div className="form-group-v5">
@@ -1217,6 +1222,7 @@ function AdminPanel() {
                   <div className="form-group-v5">
                     <label>Role</label>
                     <select value={userFormData.role} onChange={(e) => setUserFormData({...userFormData, role: e.target.value})}>
+                      <option value="user">Standard User</option>
                       <option value="buyer">Buyer</option>
                       <option value="seller">Seller</option>
                       <option value="renter">Renter</option>
@@ -1429,6 +1435,8 @@ function AdminPanel() {
                       <option value="pending">Pending</option>
                       <option value="active">Approved</option>
                       <option value="rejected">Rejected</option>
+                      <option value="sold">Sold</option>
+                      <option value="rented">Rented</option>
                     </select>
                   </td>
                   <td>

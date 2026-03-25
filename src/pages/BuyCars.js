@@ -46,15 +46,18 @@ function BuyCars() {
     try {
       setLoading(true);
       const snapshot = await getDocs(collection(db, 'cars'));
-      const allCars = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        // Normalise availability field
-        availability: doc.data().purpose === 'rent' ? 'rent' : 'sale',
-        price: doc.data().purpose === 'rent'
-          ? (doc.data().dailyRate || doc.data().price)
-          : doc.data().price,
-      }));
+      const allCars = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          // Normalise availability field
+          availability: doc.data().purpose === 'rent' ? 'rent' : 'sale',
+          price: doc.data().purpose === 'rent'
+            ? (doc.data().dailyRate || doc.data().price)
+            : doc.data().price,
+        }))
+        // Filter out sold or rented cars from marketplace
+        .filter(c => c.status !== 'sold' && c.status !== 'rented');
       setCars(allCars);
     } catch (error) {
       console.error('Error fetching cars:', error);

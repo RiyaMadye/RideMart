@@ -59,7 +59,6 @@ const useRazorpay = () => {
     }
 
     try {
-      console.log("Opening Razorpay with Key:", options.key.substring(0, 8) + "...");
       const paymentObject = new window.Razorpay(options);
       
       // Add event listener for failed payment (pre-checkout)

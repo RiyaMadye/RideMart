@@ -87,8 +87,15 @@ function MyActivity() {
       case 'rented': return rentedCars;
       case 'cart': return cartItems;
       default: return [...soldCars, ...boughtCars, ...rentedCars, ...cartItems].sort((a,b) => {
-        const timeA = (a.addedAt || a.createdAt)?.toMillis() || 0;
-        const timeB = (b.addedAt || b.createdAt)?.toMillis() || 0;
+        const getTime = (obj) => {
+          if (!obj) return 0;
+          if (typeof obj.toMillis === 'function') return obj.toMillis();
+          if (obj instanceof Date) return obj.getTime();
+          if (typeof obj === 'number') return obj;
+          return 0;
+        };
+        const timeA = getTime(a.addedAt || a.createdAt);
+        const timeB = getTime(b.addedAt || b.createdAt);
         return timeB - timeA;
       });
     }

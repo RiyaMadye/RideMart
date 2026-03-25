@@ -31,11 +31,14 @@ function CarCard({ car }) {
         brand: car.brand,
         model: car.model,
         year: car.year,
-        price: car.price,
+        price: displayPrice,
         type: car.type,
-        imageUrl: car.imageUrl || car.image,
-        sellerEmail: car.sellerEmail,
-        userId: user.uid, // Associate cart item with user
+        imageUrl: car.imageUrl || car.image || car.images?.[0] || getTypeFallbackImage(car.type),
+        sellerEmail: car.sellerEmail || '',
+        sellerName: car.sellerName || 'Verified Seller',
+        description: car.description || '',
+        mileage: car.kmDriven || car.mileage || 0,
+        userId: user.uid,
         addedAt: serverTimestamp()
       });
       alert(`✅ ${car.brand} ${car.model} added to your cart!`);
@@ -50,12 +53,12 @@ function CarCard({ car }) {
   // Fallback image by car body type — picks reliable Unsplash photo
   const getTypeFallbackImage = (type) => {
     const fallbacks = {
-      SUV:       'https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?auto=format&fit=crop&w=640&q=80',
-      Sedan:     'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=640&q=80',
+      SUV: 'https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?auto=format&fit=crop&w=640&q=80',
+      Sedan: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=640&q=80',
       Hatchback: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=640&q=80',
-      MPV:       'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=640&q=80',
-      Pickup:    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=640&q=80',
-      Coupe:     'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=640&q=80',
+      MPV: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=640&q=80',
+      Pickup: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=640&q=80',
+      Coupe: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=640&q=80',
     };
     return fallbacks[type] || fallbacks.SUV;
   };
@@ -69,7 +72,7 @@ function CarCard({ car }) {
   return (
     <div className="car-card animate-fade-in" onClick={handleViewDetails}>
       <div className="car-image-container">
-        <img 
+        <img
           src={car.imageUrl || car.image || car.images?.[0] || getTypeFallbackImage(car.type)}
           alt={`${car.brand} ${car.model}`}
           loading="lazy"
@@ -79,12 +82,20 @@ function CarCard({ car }) {
           }}
         />
         <span className="car-type-badge">{car.type}</span>
-        
+
         {!isRental && car.purpose !== 'rent' && <span className="availability-badge sale-badge">FOR SALE</span>}
         {isRental && <span className="availability-badge rent-badge">FOR RENT</span>}
         {(car.availableForBoth || (car.availableForSale && car.availableForRent)) && (
           <span className="availability-badge both-badge">SALE & RENT</span>
         )}
+        <button
+          className={`quick-add-btn ${addingToCart ? 'loading' : ''}`}
+          onClick={handleAddToCart}
+          title="Add to Cart"
+          disabled={addingToCart}
+        >
+          <FaShoppingCart />
+        </button>
       </div>
 
       <div className="car-content">
@@ -111,15 +122,7 @@ function CarCard({ car }) {
           </div>
 
           <div className="car-actions">
-            <button 
-              className={`action-btn ${addingToCart ? 'loading' : ''}`}
-              onClick={handleAddToCart}
-              title="Add to Cart"
-              disabled={addingToCart}
-            >
-              <FaShoppingCart />
-            </button>
-            <button 
+            <button
               className="btn-view"
               onClick={handleViewDetails}
             >

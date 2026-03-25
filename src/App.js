@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import BuyCars from './pages/BuyCars';
-/* import SellCar from './pages/SellCar'; */
 import RentCars from './pages/RentCars';
 import Reviews from "./pages/Reviews";
 import Footer from './components/Footer';
@@ -56,14 +55,6 @@ function AppContent() {
             />
           
     
-     { /*    <Route 
-  path="/sell" 
-  element={
-    <ProtectedRoute>
-      <SellCar />
-    </ProtectedRoute>
-  } 
-/> */}
           
           <Route path="/rent" element={<RentCars />} />
           <Route

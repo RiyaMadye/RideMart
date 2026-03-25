@@ -133,16 +133,20 @@ function CarDetails() {
             });
           }
 
-          // Log payment for both cases in the 'payments' collection
-          await addDoc(collection(db, 'payments'), {
-            userId: user.uid,
-            orderId: docRef.id, // This will be a booking or order ID
-            carId: car.id,
-            paymentId: response.razorpay_payment_id,
-            amount: amount,
-            paymentStatus: 'success',
-            timestamp: serverTimestamp(),
-          });
+          try {
+            // Log payment for both cases in the 'payments' collection
+            await addDoc(collection(db, 'payments'), {
+              userId: user.uid,
+              orderId: docRef.id, // This will be a booking or order ID
+              carId: car.id,
+              paymentId: response.razorpay_payment_id,
+              amount: amount,
+              paymentStatus: 'success',
+              timestamp: serverTimestamp(),
+            });
+          } catch (postPayError) {
+            console.error("Payment succeeded but logging failed:", postPayError);
+          }
 
           navigate(`/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${docRef.id}`);
         } catch (error) {

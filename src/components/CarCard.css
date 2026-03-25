@@ -141,21 +141,36 @@
   gap: var(--space-sm);
 }
 
-.action-btn {
-  width: 40px;
-  height: 40px;
+.quick-add-btn {
+  position: absolute;
+  bottom: var(--space-md);
+  right: var(--space-md);
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  transition: var(--transition-base);
+  background-color: var(--primary);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
 }
 
-.action-btn:hover {
-  background-color: var(--primary-light);
-  color: var(--primary);
+.quick-add-btn:hover {
+  transform: scale(1.1);
+  background-color: var(--primary-hover);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  opacity: 1;
+}
+
+.quick-add-btn.loading {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .btn-view {

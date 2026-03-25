@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, query, where, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -107,20 +107,32 @@ function Cart() {
           });
 
           // 2. Create a payment document for logging
-          await addDoc(collection(db, 'payments'), {
-            userId: currentUser.uid,
-            orderId: orderRef.id,
-            paymentId: response.razorpay_payment_id,
-            amount: totalAmount,
-            paymentStatus: 'success',
-            timestamp: serverTimestamp(),
-          });
+          try {
+            // 2. Log payment in Firestore
+            await addDoc(collection(db, 'payments'), {
+              userId: currentUser.uid,
+              orderId: orderRef.id,
+              paymentId: response.razorpay_payment_id,
+              amount: totalAmount,
+              paymentStatus: 'success',
+              timestamp: serverTimestamp(),
+            });
 
-          // 3. Clear the user's cart
-          const deletePromises = cartItems.map(item => deleteDoc(doc(db, 'cart', item.id)));
-          await Promise.all(deletePromises);
+            // 3. Update car status to 'sold' for each item
+            const statusPromises = cartItems.map(item => 
+              updateDoc(doc(db, 'cars', item.carId || item.id), { status: 'sold' })
+            );
+            await Promise.all(statusPromises);
 
-          // 4. Redirect to success page
+            // 4. Clear the user's cart
+            const deletePromises = cartItems.map(item => deleteDoc(doc(db, 'cart', item.id)));
+            await Promise.all(deletePromises);
+          } catch (postPayError) {
+            console.error("Payment succeeded but post-payment updates failed:", postPayError);
+            // We continue to redirect to success because the payment was confirmed
+          }
+
+          // 5. Redirect to success page
           navigate(`/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${orderRef.id}`);
         } catch (error) {
           console.error("Error processing order:", error);

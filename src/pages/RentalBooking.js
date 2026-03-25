@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../firebase/config';
 import useRazorpay from './useRazorpay';
@@ -223,6 +223,7 @@ export default function RentalBooking() {
       console.error('Payment initialization error:', err);
       setError('Payment initialization failed. Using legacy client-side checkout...');
       
+      /* 
       // Fallback to Simple Integration if server fails (optional)
       const fallbackOptions = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID,
@@ -245,6 +246,7 @@ export default function RentalBooking() {
           ondismiss: () => setIsProcessing(false),
         },
       };
+      */
       
       // For now, let's just show an error if they haven't set up the blaze plan
       setError('Could not connect to backend. Please ensure Firebase Functions are deployed and Blaze plan is active.');
@@ -286,16 +288,23 @@ export default function RentalBooking() {
         createdAt:        serverTimestamp(),
       });
 
-      await addDoc(collection(db, 'payments'), {
-        userId:        user.uid,
-        bookingId:     bookingRef.id,
-        carId:         car.id,
-        paymentId:     response.razorpay_payment_id,
-        orderId:       response.razorpay_order_id,
-        amount:        grandTotal,
-        paymentStatus: 'success',
-        timestamp:     serverTimestamp(),
-      });
+      try {
+        // Update car status to 'rented'
+        await updateDoc(doc(db, 'cars', car.id), { status: 'rented' });
+
+        await addDoc(collection(db, 'payments'), {
+          userId:        user.uid,
+          bookingId:     bookingRef.id,
+          carId:         car.id,
+          paymentId:     response.razorpay_payment_id,
+          orderId:       response.razorpay_order_id,
+          amount:        grandTotal,
+          paymentStatus: 'success',
+          timestamp:     serverTimestamp(),
+        });
+      } catch (postPayError) {
+        console.error("Booking payment succeeded but background updates failed:", postPayError);
+      }
 
       navigate(
         `/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${bookingRef.id}`

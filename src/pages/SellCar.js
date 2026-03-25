@@ -81,45 +81,34 @@ const [imagePreviews, setImagePreviews] = useState([]);
 
     try {
       setUploading(true);
-      console.log('📤 Starting upload...');
 
-      // Step 1: Upload ALL images to Firebase Storage
-console.log('📤 Uploading', imageFiles.length, 'images...');
+      const uploadPromises = imageFiles.map(async (file, index) => {
+        const imageRef = ref(storage, `cars/${Date.now()}_${index}_${file.name}`);
+        await uploadBytes(imageRef, file);
+        return await getDownloadURL(imageRef);
+      });
 
-const uploadPromises = imageFiles.map(async (file, index) => {
-  const imageRef = ref(storage, `cars/${Date.now()}_${index}_${file.name}`);
-  console.log(`📁 Uploading image ${index + 1}:`, imageRef.fullPath);
-  await uploadBytes(imageRef, file);
-  
-  const url = await getDownloadURL(imageRef);
-  console.log(`✅ Image ${index + 1} uploaded!`);
-  return url;
-});
+      const imageUrls = await Promise.all(uploadPromises);
 
-const imageUrls = await Promise.all(uploadPromises);
-console.log('🔗 All image URLs:', imageUrls);
-
-      // Step 2: Add car data to Firestore
-const carData = {
-  brand: formData.brand,
-  model: formData.model,
-  year: parseInt(formData.year),
-  price: parseInt(formData.price),
-  mileage: parseInt(formData.mileage),
-  type: formData.type,
-  description: formData.description,
-  sellerName: formData.sellerName,
-  sellerEmail: formData.sellerEmail,
-  sellerPhone: formData.sellerPhone,
-  imageUrl: imageUrls[0],  // First image as main image
-  images: imageUrls,       // Array of ALL image URLs
-  status: 'available',
-  createdAt: serverTimestamp(),
-  updatedAt: serverTimestamp()
-};
+      const carData = {
+        brand: formData.brand,
+        model: formData.model,
+        year: parseInt(formData.year),
+        price: parseInt(formData.price),
+        mileage: parseInt(formData.mileage),
+        type: formData.type,
+        description: formData.description,
+        sellerName: formData.sellerName,
+        sellerEmail: formData.sellerEmail,
+        sellerPhone: formData.sellerPhone,
+        imageUrl: imageUrls[0],
+        images: imageUrls,
+        status: 'available',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
 
       const docRef = await addDoc(collection(db, 'cars'), carData);
-      console.log('✅ Car added with ID:', docRef.id);
 
       // Log Activity
       const auth = getAuth();

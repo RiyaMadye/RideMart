@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { FaUserFriends, FaCog, FaGasPump, FaCheckCircle, FaSearch, FaRedo, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
 import { getCarImage } from '../utils/carImages';
+import { FaUserFriends, FaCog, FaGasPump, FaCheckCircle, FaSearch, FaRedo, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
 import './RentCars.css';
 
 const INDIAN_CITIES = [
@@ -41,7 +41,7 @@ function RentCars() {
       // Get only rent-purpose cars from the unified 'cars' collection
       const cars = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(c => c.purpose === 'rent' || c.availability === 'rent' || c.dailyRate);
+        .filter(c => (c.purpose === 'rent' || c.availability === 'rent' || c.dailyRate) && c.status !== 'rented' && c.status !== 'sold');
       setAllCars(cars);
     } catch (error) {
       console.error('Error fetching rental cars:', error);
