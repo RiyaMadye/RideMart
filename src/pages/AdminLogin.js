@@ -12,8 +12,16 @@ function AdminLogin() {
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    let { name, value } = e.target;
+    if (name === 'password') {
+      value = value.replace(/\s/g, '');
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+  };
+
+  const handleSpaceKey = (e) => {
+    if (e.key === ' ') e.preventDefault();
   };
 
   const handleSubmit = async (e) => {
@@ -99,6 +107,7 @@ function AdminLogin() {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
+                    onKeyDown={handleSpaceKey}
                     required
                   />
                 </div>
