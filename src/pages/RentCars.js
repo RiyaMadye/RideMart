@@ -4,6 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { getCarImage } from '../utils/carImages';
 import { FaUserFriends, FaCog, FaGasPump, FaCheckCircle, FaSearch, FaRedo, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
+import { getCurrentPosition, getCityFromCoords } from '../utils/locationUtils';
 import './RentCars.css';
 
 const INDIAN_CITIES = [
@@ -16,6 +17,7 @@ function RentCars() {
   const [allCars, setAllCars] = useState([]);
   const [filteredCars, setFilteredCars] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [locating, setLocating] = useState(false);
   const navigate = useNavigate();
 
   // Filters
@@ -50,6 +52,25 @@ function RentCars() {
     }
   };
 
+  const handleCurrentLocation = async () => {
+    try {
+      setLocating(true);
+      const coords = await getCurrentPosition();
+      const city = await getCityFromCoords(coords.lat, coords.lng);
+      if (city) {
+        setSelectedLocation(city);
+        setSearchTerm(city);
+      } else {
+        alert("Could not determine your city. Please select manually.");
+      }
+    } catch (error) {
+      console.error("Geolocation error:", error);
+      alert("Error getting location. Please check your browser permissions.");
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const filterCars = () => {
     let filtered = [...allCars];
 
@@ -58,7 +79,10 @@ function RentCars() {
       filtered = filtered.filter(c =>
         c.brand?.toLowerCase().includes(t) ||
         c.model?.toLowerCase().includes(t) ||
-        c.location?.toLowerCase().includes(t)
+        c.location?.toLowerCase().includes(t) ||
+        c.city?.toLowerCase().includes(t) ||
+        c.area?.toLowerCase().includes(t) ||
+        c.state?.toLowerCase().includes(t)
       );
     }
 
@@ -70,7 +94,9 @@ function RentCars() {
     if (selectedLocation) {
       filtered = filtered.filter(c =>
         c.location?.toLowerCase() === selectedLocation.toLowerCase() ||
-        c.city?.toLowerCase() === selectedLocation.toLowerCase()
+        c.city?.toLowerCase() === selectedLocation.toLowerCase() ||
+        c.area?.toLowerCase() === selectedLocation.toLowerCase() ||
+        c.state?.toLowerCase() === selectedLocation.toLowerCase()
       );
     }
 
@@ -134,6 +160,14 @@ function RentCars() {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
+            <button 
+              className="location-detect-btn" 
+              onClick={handleCurrentLocation} 
+              disabled={locating}
+              title="Use Current Location"
+            >
+              <FaMapMarkerAlt className={locating ? 'pulse' : ''} /> {locating ? 'Locating...' : 'Nearby'}
+            </button>
           </div>
 
           <div className="filters-grid">

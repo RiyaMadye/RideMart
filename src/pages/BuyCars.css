@@ -76,6 +76,48 @@
   box-shadow: 0 0 0 4px rgba(194, 24, 7, 0.1);
 }
 
+.location-detect-btn {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  background: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 5;
+  margin-bottom: var(--space-xl); /* Adjusted for position absolute */
+}
+
+.location-detect-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.location-detect-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pulse {
+  animation: pulse-animation 1.5s infinite;
+}
+
+@keyframes pulse-animation {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

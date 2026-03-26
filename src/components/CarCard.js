@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
-import { FaCalendarAlt, FaRoad, FaShoppingCart } from 'react-icons/fa';
+import { FaCalendarAlt, FaRoad, FaShoppingCart, FaMapMarkerAlt } from 'react-icons/fa';
 import './CarCard.css';
 
 function CarCard({ car }) {
@@ -111,6 +111,11 @@ function CarCard({ car }) {
           <div className="info-item">
             <FaRoad /> <span>{(car.kmDriven || car.mileage)?.toLocaleString()} {car.kmDriven ? 'km' : 'mi'}</span>
           </div>
+          {car.city && (
+            <div className="info-item location-info">
+              <FaMapMarkerAlt /> <span>{car.area ? `${car.area}, ` : ''}{car.city}</span>
+            </div>
+          )}
         </div>
 
         <p className="car-description">{car.description}</p>

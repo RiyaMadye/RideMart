@@ -103,6 +103,18 @@
   font-size: 0.85rem;
 }
 
+.location-info {
+  color: var(--primary-light);
+  font-weight: 500;
+}
+
+.location-info span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
 .car-description {
   font-size: 0.9rem;
   color: var(--text-muted);

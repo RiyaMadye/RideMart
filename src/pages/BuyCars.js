@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import CarCard from '../components/CarCard';
-import { FaSearch, FaFilter, FaRedo, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaRedo, FaChevronDown, FaChevronUp, FaMapMarkerAlt } from 'react-icons/fa';
+import { getCurrentPosition, getCityFromCoords } from '../utils/locationUtils';
 import './BuyCars.css';
 
 const INDIAN_CITIES = [
@@ -32,6 +33,7 @@ function BuyCars() {
   const [selectedCondition, setSelectedCondition] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [sortBy, setSortBy] = useState('');
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => { fetchCars(); }, []);
 
@@ -66,6 +68,26 @@ function BuyCars() {
     }
   };
 
+  const handleCurrentLocation = async () => {
+    try {
+      setLocating(true);
+      const coords = await getCurrentPosition();
+      const city = await getCityFromCoords(coords.lat, coords.lng);
+      if (city) {
+        setSelectedLocation(city);
+        // Also update search term for better UX
+        setSearchTerm(city);
+      } else {
+        alert("Could not determine your city. Please select manually.");
+      }
+    } catch (error) {
+      console.error("Geolocation error:", error);
+      alert("Error getting location. Please check your browser permissions.");
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const filterCars = () => {
     let filtered = [...cars];
 
@@ -81,7 +103,10 @@ function BuyCars() {
         c.brand?.toLowerCase().includes(term) ||
         c.model?.toLowerCase().includes(term) ||
         c.description?.toLowerCase().includes(term) ||
-        c.location?.toLowerCase().includes(term)
+        c.location?.toLowerCase().includes(term) ||
+        c.city?.toLowerCase().includes(term) ||
+        c.area?.toLowerCase().includes(term) ||
+        c.state?.toLowerCase().includes(term)
       );
     }
 
@@ -103,7 +128,9 @@ function BuyCars() {
     // Location
     if (selectedLocation) filtered = filtered.filter(c =>
       c.location?.toLowerCase() === selectedLocation.toLowerCase() ||
-      c.city?.toLowerCase() === selectedLocation.toLowerCase()
+      c.city?.toLowerCase() === selectedLocation.toLowerCase() ||
+      c.area?.toLowerCase() === selectedLocation.toLowerCase() ||
+      c.state?.toLowerCase() === selectedLocation.toLowerCase()
     );
 
     // Year range
@@ -216,6 +243,14 @@ function BuyCars() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <button 
+              className="location-detect-btn" 
+              onClick={handleCurrentLocation} 
+              disabled={locating}
+              title="Use Current Location"
+            >
+              <FaMapMarkerAlt className={locating ? 'pulse' : ''} /> {locating ? 'Locating...' : 'Nearby'}
+            </button>
           </div>
 
           <div className="filters-grid">

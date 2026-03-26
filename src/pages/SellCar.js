@@ -14,6 +14,9 @@ function SellCar() {
     mileage: '',
     type: '',
     description: '',
+    city: '',
+    area: '',
+    state: '',
     sellerName: '',
     sellerEmail: '',
     sellerPhone: ''
@@ -98,6 +101,9 @@ const [imagePreviews, setImagePreviews] = useState([]);
         mileage: parseInt(formData.mileage),
         type: formData.type,
         description: formData.description,
+        city: formData.city,
+        area: formData.area,
+        state: formData.state,
         sellerName: formData.sellerName,
         sellerEmail: formData.sellerEmail,
         sellerPhone: formData.sellerPhone,
@@ -131,6 +137,9 @@ const [imagePreviews, setImagePreviews] = useState([]);
   mileage: '',
   type: '',
   description: '',
+  city: '',
+  area: '',
+  state: '',
   sellerName: '',
   sellerEmail: '',
   sellerPhone: ''
@@ -247,6 +256,50 @@ setImagePreviews([]);
                   <option value="Hatchback">Hatchback</option>
                   <option value="Van">Van</option>
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="city">City *</label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Mumbai"
+                  disabled={uploading}
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="area">Area/Locality *</label>
+                <input
+                  type="text"
+                  id="area"
+                  name="area"
+                  value={formData.area}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Bandra West"
+                  disabled={uploading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="state">State *</label>
+                <input
+                  type="text"
+                  id="state"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Maharashtra"
+                  disabled={uploading}
+                />
               </div>
             </div>
 

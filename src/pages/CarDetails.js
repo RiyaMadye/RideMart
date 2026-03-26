@@ -4,7 +4,7 @@ import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/fires
 import { db } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
 import useRazorpay from './useRazorpay';
-import { FaCalendarAlt, FaRoad, FaCogs, FaGasPump, FaPalette, FaPhone, FaArrowLeft, FaShoppingCart, FaWhatsapp, FaCreditCard } from 'react-icons/fa';
+import { FaCalendarAlt, FaRoad, FaCogs, FaGasPump, FaPalette, FaPhone, FaArrowLeft, FaShoppingCart, FaWhatsapp, FaCreditCard, FaMapMarkerAlt } from 'react-icons/fa';
 import './CarDetails.css';
 
 function CarDetails() {
@@ -219,6 +219,9 @@ function CarDetails() {
               <div className="spec-item"><FaCogs className="spec-icon" /><div><span className="spec-label">Trans</span><span className="spec-value">{car.transmission || 'Auto'}</span></div></div>
               <div className="spec-item"><FaGasPump className="spec-icon" /><div><span className="spec-label">Fuel</span><span className="spec-value">{car.fuelType || 'Petrol'}</span></div></div>
               <div className="spec-item"><FaPalette className="spec-icon" /><div><span className="spec-label">Color</span><span className="spec-value">{car.color || 'N/A'}</span></div></div>
+              {car.city && (
+                <div className="spec-item"><FaMapMarkerAlt className="spec-icon" /><div><span className="spec-label">Location</span><span className="spec-value">{car.area ? `${car.area}, ` : ''}{car.city}</span></div></div>
+              )}
             </div>
 
             <div className="action-buttons">
@@ -228,6 +231,17 @@ function CarDetails() {
               <button className="btn btn-secondary contact-btn-large" onClick={() => setShowContactModal(true)}>
                 <FaPhone /> Contact Seller
               </button>
+              {car.city && (
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${car.area || ''} ${car.city} ${car.state || ''}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary map-btn"
+                  style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
+                >
+                  <FaMapMarkerAlt /> View on Map
+                </a>
+              )}
             </div>
 
             <div className="description-section">

@@ -31,6 +31,9 @@ function ListCar() {
     dailyRate: '',
     seats: '5',
     features: [],
+    city: '',
+    area: '',
+    state: '',
     sellerName: '',
     sellerEmail: '',
     sellerPhone: ''
@@ -261,6 +264,20 @@ function ListCar() {
                   <select name="type" value={formData.type} onChange={handleChange} required>
                     <option value="">Select</option><option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="Coupe">Coupe</option>
                   </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>City *</label>
+                  <input name="city" value={formData.city} onChange={handleChange} required placeholder="e.g. Mumbai" />
+                </div>
+                <div className="form-group">
+                  <label>Area *</label>
+                  <input name="area" value={formData.area} onChange={handleChange} required placeholder="e.g. Bandra" />
+                </div>
+                <div className="form-group">
+                  <label>State *</label>
+                  <input name="state" value={formData.state} onChange={handleChange} required placeholder="e.g. Maharashtra" />
                 </div>
               </div>
               <div className="form-group">
