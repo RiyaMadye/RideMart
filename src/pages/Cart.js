@@ -135,7 +135,12 @@ function Cart() {
           // 5. Redirect to success page
           navigate(`/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${orderRef.id}`);
         } catch (error) {
-          console.error("Error processing order:", error);
+          console.error("Critical error processing order after successful payment:", error);
+          if (error.code === 'permission-denied') {
+            alert("❌ Database Error: Permission Denied. Please ensure your Firestore Security Rules are updated.");
+          } else {
+            alert("❌ Error saving your booking: " + error.message);
+          }
           navigate('/payment-failure');
         }
       },

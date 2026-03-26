@@ -19,7 +19,11 @@ service cloud.firestore {
     match /cars/{carId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSeller(resource.data.sellerEmail);
+      allow update: if isSignedIn() && (
+        isSeller(resource.data.sellerEmail) || 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+      );
+      allow delete: if isSeller(resource.data.sellerEmail);
     }
     
     match /rentals/{rentalId} {
@@ -37,6 +41,16 @@ service cloud.firestore {
     // Cart
     match /cart/{cartId} {
       allow read, write: if isSignedIn();
+    }
+
+    // Bookings (New)
+    match /bookings/{bookingId} {
+      allow read, create: if isSignedIn();
+    }
+
+    // Payments (New)
+    match /payments/{paymentId} {
+      allow read, create: if isSignedIn();
     }
 
     // User Data - ALLOW READ FOR PASSWORD RESET
