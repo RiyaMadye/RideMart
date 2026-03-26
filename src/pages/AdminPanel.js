@@ -7,7 +7,7 @@ import { getCarImages } from '../utils/carImages';
 import { 
   FaCar, FaUsers, FaShoppingCart, FaChartLine, FaTrash, FaEdit, FaPoll,
   FaCheck, FaPlus, FaArrowUp, FaArrowDown, FaHistory, FaWallet,
-  FaClipboardList, FaStar, FaHeadset, FaBullhorn, FaPaperPlane, FaCog, FaKey
+  FaClipboardList, FaStar, FaHeadset, FaBullhorn, FaPaperPlane, FaCog, FaKey, FaCreditCard
 } from 'react-icons/fa';
 import './AdminPanel.css';
 const AnalyticsDashboard = React.lazy(() => import('./AnalyticsDashboard'));
