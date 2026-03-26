@@ -503,12 +503,25 @@ export default function RentalBooking() {
                     />
                   </div>
                 </div>
-
                 {/* Booking summary */}
                 <div className="rb-booking-summary">
                   <h4>Booking Review</h4>
                   <div className="rb-summary-row"><span>Vehicle</span><strong>{car.brand} {car.model}</strong></div>
-                  <div className="rb-summary-row"><span>Pick-up</span><strong>{pickupDate}</strong></div>            {/* ── STEP 3: Rental Agreement ── */}
+                  <div className="rb-summary-row"><span>Pick-up</span><strong>{pickupDate}</strong></div>
+                  <div className="rb-summary-row"><span>Return</span><strong>{returnDate}</strong></div>
+                  <div className="rb-summary-row"><span>Duration</span><strong>{days} day{days > 1 ? 's' : ''}</strong></div>
+                  <div className="rb-summary-row"><span>City</span><strong>{pickupCity}</strong></div>
+                  <div className="rb-summary-divider" />
+                  <div className="rb-summary-row"><span>Base ({days}d × ₹{fmt(car.dailyRate || car.price || 0)})</span><strong>₹{fmt(baseTotal)}</strong></div>
+                  {addonTotal > 0 && <div className="rb-summary-row"><span>Add-ons</span><strong>₹{fmt(addonTotal)}</strong></div>}
+                  <div className="rb-summary-row rb-summary-total">
+                    <span>Grand Total</span><strong>₹{fmt(grandTotal)}</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 3: Rental Agreement ── */}
             {step === 3 && (
               <div className="rb-form-section animate-fade-in">
                 <h2 className="rb-section-title"><FaShieldAlt /> Digital Rental Contract</h2>
@@ -562,18 +575,6 @@ export default function RentalBooking() {
                 <button className="rb-print-btn" onClick={() => window.print()}>
                   <FaRoute /> Print/Save as PDF
                 </button>
-              </div>
-            )}
-                  <div className="rb-summary-row"><span>Return</span><strong>{returnDate}</strong></div>
-                  <div className="rb-summary-row"><span>Duration</span><strong>{days} day{days > 1 ? 's' : ''}</strong></div>
-                  <div className="rb-summary-row"><span>City</span><strong>{pickupCity}</strong></div>
-                  <div className="rb-summary-divider" />
-                  <div className="rb-summary-row"><span>Base ({days}d × ₹{fmt(car.dailyRate || car.price || 0)})</span><strong>₹{fmt(baseTotal)}</strong></div>
-                  {addonTotal > 0 && <div className="rb-summary-row"><span>Add-ons</span><strong>₹{fmt(addonTotal)}</strong></div>}
-                  <div className="rb-summary-row rb-summary-total">
-                    <span>Grand Total</span><strong>₹{fmt(grandTotal)}</strong>
-                  </div>
-                </div>
               </div>
             )}
 
