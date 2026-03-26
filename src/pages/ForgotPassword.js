@@ -17,6 +17,10 @@ function ForgotPassword() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const handleSpaceKey = (e) => {
+    if (e.key === ' ') e.preventDefault();
+  };
+
   const handleEmailReset = async (e) => {
     e.preventDefault();
     setError('');
@@ -219,7 +223,8 @@ function ForgotPassword() {
                                 name="newPassword"
                                 placeholder="Enter new password"
                                 value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
+                                onChange={(e) => setNewPassword(e.target.value.replace(/\s/g, ''))}
+                                onKeyDown={handleSpaceKey}
                                 required
                             />
                             <button type="button" className="toggle-pw" onClick={() => setShowPassword(!showPassword)}>
@@ -238,7 +243,8 @@ function ForgotPassword() {
                                 name="confirmPassword"
                                 placeholder="Confirm new password"
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={(e) => setConfirmPassword(e.target.value.replace(/\s/g, ''))}
+                                onKeyDown={handleSpaceKey}
                                 required
                             />
                         </div>

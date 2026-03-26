@@ -28,8 +28,16 @@ function Login() {
   }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    let { name, value } = e.target;
+    if (name === 'password') {
+      value = value.replace(/\s/g, '');
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+  };
+
+  const handleSpaceKey = (e) => {
+    if (e.key === ' ') e.preventDefault();
   };
 
   /* ── Friendly Firebase error messages ── */
@@ -210,6 +218,7 @@ function Login() {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
+                    onKeyDown={handleSpaceKey}
                     required autoComplete="current-password"
                   />
                   <button type="button" className="toggle-pw" onClick={() => setShowPassword(!showPassword)}>

@@ -36,8 +36,17 @@ function Signup() {
   const [newUserEmail, setNewUserEmail] = useState('');
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    let { name, value } = e.target;
+    // Restrict spaces in password fields
+    if (name === 'password' || name === 'confirmPassword') {
+      value = value.replace(/\s/g, '');
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+  };
+
+  const handleSpaceKey = (e) => {
+    if (e.key === ' ') e.preventDefault();
   };
 
   /* ── Password strength ── */
@@ -354,6 +363,7 @@ function Signup() {
                       placeholder="Min 8 characters"
                       value={formData.password}
                       onChange={handleChange}
+                      onKeyDown={handleSpaceKey}
                       required minLength={8}
                       autoComplete="new-password"
                     />
@@ -394,6 +404,7 @@ function Signup() {
                       placeholder="Repeat your password"
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      onKeyDown={handleSpaceKey}
                       required
                       autoComplete="new-password"
                     />
