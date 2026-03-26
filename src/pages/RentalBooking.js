@@ -34,7 +34,7 @@ function fmt(n) { return n.toLocaleString('en-IN'); }
 
 // ── Step indicator ────────────────────────────────────────────
 function StepBar({ step }) {
-  const steps = ['Trip Details', 'Add-ons & Review', 'Payment'];
+  const steps = ['Trip Details', 'Add-ons & Review', 'Rental Agreement', 'Payment'];
   return (
     <div className="rb-step-bar">
       {steps.map((label, i) => (
@@ -105,12 +105,16 @@ export default function RentalBooking() {
   const [pickupDate, setPickupDate]   = useState(today());
   const [returnDate, setReturnDate]   = useState('');
   const [pickupCity, setPickupCity]   = useState('');
-  const [driverName, setDriverName]   = useState('');
-  const [driverPhone, setDriverPhone] = useState('');
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
-  // Step 2 — add-ons
+  // Step 2 — add-ons & driver details
   const [activeAddons, setActiveAddons] = useState({});
+  const [driverName, setDriverName]   = useState('');
+  const [driverPhone, setDriverPhone] = useState('');
+
+  // Step 3 — contract
+  const [agreementSigned, setAgreementSigned] = useState(false);
+  const [signatureName, setSignatureName] = useState('');
 
   // ─── Fetch car from Firestore if not passed via state
   useEffect(() => {
@@ -161,6 +165,10 @@ export default function RentalBooking() {
     }
     if (step === 2 && (!driverName.trim() || !driverPhone.trim())) {
       setError('Please enter driver name and phone number.');
+      return;
+    }
+    if (step === 3 && (!agreementSigned || !signatureName.trim())) {
+      setError('Please read the agreement, check the box, and sign your name.');
       return;
     }
     setStep(s => s + 1);
@@ -283,6 +291,10 @@ export default function RentalBooking() {
         totalPrice:       grandTotal,
         status:           'active',
         paymentStatus:    'paid',
+        contractSigned:   true,
+        signedByName:     signatureName,
+        signedAt:         serverTimestamp(),
+        contractRef:      `RM-CNT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         razorpayPaymentId: response.razorpay_payment_id,
         razorpayOrderId:   response.razorpay_order_id,
         createdAt:        serverTimestamp(),
@@ -496,7 +508,62 @@ export default function RentalBooking() {
                 <div className="rb-booking-summary">
                   <h4>Booking Review</h4>
                   <div className="rb-summary-row"><span>Vehicle</span><strong>{car.brand} {car.model}</strong></div>
-                  <div className="rb-summary-row"><span>Pick-up</span><strong>{pickupDate}</strong></div>
+                  <div className="rb-summary-row"><span>Pick-up</span><strong>{pickupDate}</strong></div>            {/* ── STEP 3: Rental Agreement ── */}
+            {step === 3 && (
+              <div className="rb-form-section animate-fade-in">
+                <h2 className="rb-section-title"><FaShieldAlt /> Digital Rental Contract</h2>
+                <p className="rb-section-sub">Please review and sign the agreement below</p>
+
+                <div className="rb-contract-document">
+                  <div className="rb-contract-header">
+                    <img src="/logo-brand.jpg" alt="RideMart" className="rb-contract-logo" onError={e => e.target.style.display='none'} />
+                    <div className="rb-contract-meta">
+                      <h3>RENTAL AGREEMENT</h3>
+                      <p>Ref: RM-CNT-${Math.random().toString(36).substr(2, 6).toUpperCase()}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="rb-contract-body">
+                    <pre className="rb-contract-text">{getContractText()}</pre>
+                  </div>
+
+                  <div className="rb-contract-footer">
+                    <div className="rb-signature-box">
+                      <label>Digital Signature (Type your full name)</label>
+                      <input 
+                        type="text" 
+                        placeholder="John Doe" 
+                        value={signatureName}
+                        onChange={e => setSignatureName(e.target.value)}
+                        className="rb-signature-input"
+                      />
+                      <div className="rb-signature-line"></div>
+                      <p className="rb-signature-label">Signature of Renter</p>
+                    </div>
+                    
+                    <div className="rb-owner-signature">
+                      <div className="rb-stamp">RideMart Verified</div>
+                      <p className="rb-signature-label">Authorized Signatory (Owner)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rb-checkbox-group contract-check">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={agreementSigned}
+                      onChange={e => setAgreementSigned(e.target.checked)}
+                    />
+                    I have read, understood and agree to the terms and conditions of this rental contract.
+                  </label>
+                </div>
+
+                <button className="rb-print-btn" onClick={() => window.print()}>
+                  <FaRoute /> Print/Save as PDF
+                </button>
+              </div>
+            )}
                   <div className="rb-summary-row"><span>Return</span><strong>{returnDate}</strong></div>
                   <div className="rb-summary-row"><span>Duration</span><strong>{days} day{days > 1 ? 's' : ''}</strong></div>
                   <div className="rb-summary-row"><span>City</span><strong>{pickupCity}</strong></div>
@@ -510,8 +577,8 @@ export default function RentalBooking() {
               </div>
             )}
 
-            {/* ── STEP 3: Payment ── */}
-            {step === 3 && (
+            {/* ── STEP 4: Payment ── */}
+            {step === 4 && (
               <div className="rb-form-section animate-fade-in">
                 <h2 className="rb-section-title"><FaCreditCard /> Secure Payment</h2>
                 <p className="rb-section-sub">Your booking will be confirmed immediately after payment</p>
@@ -569,9 +636,9 @@ export default function RentalBooking() {
                   <FaChevronLeft /> Back
                 </button>
               )}
-              {step < 3 && (
+              {step < 4 && (
                 <button className="rb-btn-next" onClick={goNext}>
-                  {step === 2 ? 'Review & Pay' : 'Continue'} <FaChevronRight />
+                  {step === 3 ? 'Proceed to Payment' : 'Continue'} <FaChevronRight />
                 </button>
               )}
             </div>

@@ -663,3 +663,152 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(194,24,7,0.35);
 }
+
+/* ── Rental Contract Styles ─────────────────────────────── */
+.rb-contract-document {
+  background: #fdfdfd;
+  color: #1a1a2e;
+  padding: 3rem;
+  border-radius: 4px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  margin-bottom: 2rem;
+  font-family: 'Times New Roman', serif;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.rb-contract-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #1a1a2e;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.rb-contract-logo {
+  height: 40px;
+}
+
+.rb-contract-meta {
+  text-align: right;
+}
+
+.rb-contract-meta h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: #1a1a2e;
+}
+
+.rb-contract-meta p {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.rb-contract-body {
+  margin-bottom: 3rem;
+}
+
+.rb-contract-text {
+  white-space: pre-wrap;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.rb-contract-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 4rem;
+}
+
+.rb-signature-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.rb-signature-box label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
+.rb-signature-input {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #1a1a2e !important;
+  color: #1a1a2e !important;
+  font-family: 'Dancing Script', 'Cursive', serif;
+  font-size: 1.5rem !important;
+  padding: 0.5rem 0 !important;
+  border-radius: 0 !important;
+}
+
+.rb-signature-line {
+  height: 1px;
+  background: #1a1a2e;
+  margin-top: 2px;
+}
+
+.rb-signature-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+  color: #666;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.rb-owner-signature {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.rb-stamp {
+  border: 3px double var(--primary);
+  color: var(--primary);
+  padding: 0.5rem 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  transform: rotate(-10deg);
+  margin-bottom: 1rem;
+  font-family: sans-serif;
+  opacity: 0.8;
+}
+
+.contract-check label {
+  color: var(--text-white) !important;
+  font-weight: 600;
+}
+
+.rb-print-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.rb-print-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-white);
+}
+
+@media print {
+  .rb-page * { visibility: hidden; }
+  .rb-contract-document, .rb-contract-document * { visibility: visible; }
+  .rb-contract-document { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
+}
