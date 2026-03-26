@@ -109,6 +109,7 @@ const [imagePreviews, setImagePreviews] = useState([]);
         sellerPhone: formData.sellerPhone,
         imageUrl: imageUrls[0],
         images: imageUrls,
+        purpose: 'sale', // Explicitly for sale
         status: 'available',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()

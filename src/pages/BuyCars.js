@@ -52,14 +52,12 @@ function BuyCars() {
         .map(doc => ({
           id: doc.id,
           ...doc.data(),
-          // Normalise availability field
-          availability: doc.data().purpose === 'rent' ? 'rent' : 'sale',
-          price: doc.data().purpose === 'rent'
-            ? (doc.data().dailyRate || doc.data().price)
-            : doc.data().price,
+          // Ensure strictly 'sale' for this page
+          availability: 'sale',
+          price: doc.data().price || doc.data().salePrice || 0,
         }))
-        // Filter out sold or rented cars from marketplace
-        .filter(c => c.status !== 'sold' && c.status !== 'rented');
+        // STRICT FILTER: Only show cars intended for sale
+        .filter(c => (c.purpose === 'sale' || c.listingPurpose === 'sell' || c.listingPurpose === 'both') && c.status !== 'sold');
       setCars(allCars);
     } catch (error) {
       console.error('Error fetching cars:', error);
@@ -254,15 +252,7 @@ function BuyCars() {
           </div>
 
           <div className="filters-grid">
-            {/* Listing type */}
-            <div className="filter-group">
-              <label className="filter-label">Listing Type</label>
-              <select className="filter-select" value={availabilityFilter} onChange={e => setAvailabilityFilter(e.target.value)}>
-                <option value="all">All Listings</option>
-                <option value="sale">For Sale</option>
-                <option value="rent">For Rent</option>
-              </select>
-            </div>
+            {/* Listing type removed as per user request (Buy page is strictly for sale) */}
 
             {/* Brand */}
             <div className="filter-group">

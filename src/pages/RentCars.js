@@ -43,7 +43,8 @@ function RentCars() {
       // Get only rent-purpose cars from the unified 'cars' collection
       const cars = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(c => (c.purpose === 'rent' || c.availability === 'rent' || c.dailyRate) && c.status !== 'rented' && c.status !== 'sold');
+        // STRICT FILTER: Only show cars intended for rent
+        .filter(c => (c.purpose === 'rent' || c.listingPurpose === 'rent' || c.listingPurpose === 'both') && c.status !== 'rented');
       setAllCars(cars);
     } catch (error) {
       console.error('Error fetching rental cars:', error);
