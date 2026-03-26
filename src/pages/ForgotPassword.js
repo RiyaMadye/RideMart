@@ -16,9 +16,13 @@ function ForgotPassword() {
   const [resetMethod, setResetMethod] = useState('email'); // 'email' or 'manual'
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleSpaceKey = (e) => {
-    if (e.key === ' ') e.preventDefault();
+    if (e.key === ' ') {
+      e.preventDefault();
+      setPasswordError('Password cannot contain spaces');
+    }
   };
 
   const handleEmailReset = async (e) => {
@@ -213,9 +217,7 @@ function ForgotPassword() {
                         </div>
                     </div>
 
-                    <div className="field-group">
-                        <label htmlFor="newPassword">New Password</label>
-                        <div className="input-wrapper">
+                        <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
                             <span className="input-icon"><FaLock /></span>
                             <input
                                 type={showPassword ? 'text' : 'password'}
@@ -223,7 +225,16 @@ function ForgotPassword() {
                                 name="newPassword"
                                 placeholder="Enter new password"
                                 value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value.replace(/\s/g, ''))}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (/\s/.test(val)) {
+                                        setPasswordError('Password cannot contain spaces');
+                                        setNewPassword(val.replace(/\s/g, ''));
+                                    } else {
+                                        setPasswordError('');
+                                        setNewPassword(val);
+                                    }
+                                }}
                                 onKeyDown={handleSpaceKey}
                                 required
                             />
@@ -231,11 +242,15 @@ function ForgotPassword() {
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
-                    </div>
+                        {passwordError && (
+                            <div className="password-error-text">
+                                <FaExclamationTriangle size={12} /> {passwordError}
+                            </div>
+                        )}
 
                     <div className="field-group">
                         <label htmlFor="confirmPassword">Confirm Password</label>
-                        <div className="input-wrapper">
+                        <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
                             <span className="input-icon"><FaLock /></span>
                             <input
                                 type={showPassword ? 'text' : 'password'}
@@ -243,7 +258,16 @@ function ForgotPassword() {
                                 name="confirmPassword"
                                 placeholder="Confirm new password"
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value.replace(/\s/g, ''))}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (/\s/.test(val)) {
+                                        setPasswordError('Password cannot contain spaces');
+                                        setConfirmPassword(val.replace(/\s/g, ''));
+                                    } else {
+                                        setPasswordError('');
+                                        setConfirmPassword(val);
+                                    }
+                                }}
                                 onKeyDown={handleSpaceKey}
                                 required
                             />

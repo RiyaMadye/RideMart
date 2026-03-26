@@ -34,19 +34,28 @@ function Signup() {
   // State for the "Save Login" popup
   const [showSavePopup, setShowSavePopup] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleChange = (e) => {
     let { name, value } = e.target;
     // Restrict spaces in password fields
     if (name === 'password' || name === 'confirmPassword') {
-      value = value.replace(/\s/g, '');
+      if (/\s/.test(value)) {
+        setPasswordError('Password cannot contain spaces');
+        value = value.replace(/\s/g, '');
+      } else {
+        setPasswordError('');
+      }
     }
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
   };
 
   const handleSpaceKey = (e) => {
-    if (e.key === ' ') e.preventDefault();
+    if (e.key === ' ') {
+      e.preventDefault();
+      setPasswordError('Password cannot contain spaces');
+    }
   };
 
   /* ── Password strength ── */
@@ -355,7 +364,7 @@ function Signup() {
               <form onSubmit={handleSubmit} className="auth-form">
                 <div className="field-group">
                   <label htmlFor="password">Create Password</label>
-                  <div className="input-wrapper">
+                  <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
                     <span className="input-icon"><FaLock /></span>
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -375,6 +384,11 @@ function Signup() {
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
+                  {passwordError && (
+                    <div className="password-error-text">
+                      <FaExclamationTriangle size={12} /> {passwordError}
+                    </div>
+                  )}
 
                   {/* Password strength bar */}
                   {formData.password && (
@@ -396,7 +410,7 @@ function Signup() {
 
                 <div className="field-group">
                   <label htmlFor="confirmPassword">Confirm Password</label>
-                  <div className="input-wrapper">
+                  <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
                     <span className="input-icon"><FaKey /></span>
                     <input
                       type={showConfirm ? 'text' : 'password'}

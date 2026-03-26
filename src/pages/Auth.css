@@ -438,6 +438,22 @@
   box-shadow: 0 0 0 3px rgba(255,107,107,0.12);
 }
 
+.input-wrapper.error-border input {
+  border-color: #ff5050 !important;
+  background: rgba(255, 80, 80, 0.05) !important;
+  box-shadow: 0 0 0 3px rgba(255, 80, 80, 0.12) !important;
+}
+
+.password-error-text {
+  color: #ff8080;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  animation: fadeIn 0.3s ease;
+}
+
 .toggle-pw {
   position: absolute;
   right: 0.9rem;

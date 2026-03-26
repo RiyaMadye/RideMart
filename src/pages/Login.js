@@ -18,6 +18,7 @@ function Login() {
   const [loading, setLoading]             = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError]                 = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   // On component load, check for a saved email to pre-fill the form
   useEffect(() => {
@@ -30,14 +31,22 @@ function Login() {
   const handleChange = (e) => {
     let { name, value } = e.target;
     if (name === 'password') {
-      value = value.replace(/\s/g, '');
+      if (/\s/.test(value)) {
+        setPasswordError('Password cannot contain spaces');
+        value = value.replace(/\s/g, '');
+      } else {
+        setPasswordError('');
+      }
     }
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
   };
 
   const handleSpaceKey = (e) => {
-    if (e.key === ' ') e.preventDefault();
+    if (e.key === ' ') {
+      e.preventDefault();
+      setPasswordError('Password cannot contain spaces');
+    }
   };
 
   /* ── Friendly Firebase error messages ── */
@@ -210,7 +219,7 @@ function Login() {
                     Forgot password?
                   </Link>
                 </label>
-                <div className="input-wrapper">
+                <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
                   <span className="input-icon"><FaLock /></span>
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -225,6 +234,11 @@ function Login() {
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
+                {passwordError && (
+                  <div className="password-error-text">
+                    <FaExclamationTriangle size={12} /> {passwordError}
+                  </div>
+                )}
               </div>
 
               <button type="submit" className={`auth-submit-btn ${loading ? 'loading' : ''}`} disabled={loading}>

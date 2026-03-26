@@ -10,18 +10,27 @@ function AdminLogin() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleChange = (e) => {
     let { name, value } = e.target;
     if (name === 'password') {
-      value = value.replace(/\s/g, '');
+      if (/\s/.test(value)) {
+        setPasswordError('Password cannot contain spaces');
+        value = value.replace(/\s/g, '');
+      } else {
+        setPasswordError('');
+      }
     }
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
   };
 
   const handleSpaceKey = (e) => {
-    if (e.key === ' ') e.preventDefault();
+    if (e.key === ' ') {
+      e.preventDefault();
+      setPasswordError('Password cannot contain spaces');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -96,11 +105,16 @@ function AdminLogin() {
                     required
                   />
                 </div>
+                {passwordError && (
+                  <div className="password-error-text">
+                    <FaExclamationTriangle size={12} /> {passwordError}
+                  </div>
+                )}
               </div>
 
               <div className="field-group">
                 <label htmlFor="password">Security Password</label>
-                <div className="input-wrapper">
+                <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
                   <span className="input-icon"><FaLock /></span>
                   <input
                     type="password" id="password" name="password"
