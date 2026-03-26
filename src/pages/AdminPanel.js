@@ -125,6 +125,10 @@ function AdminPanel() {
   const [resetSearchQuery, setResetSearchQuery] = useState('');
   const [resetFilterStatus, setResetFilterStatus] = useState('pending');
 
+  // Payments State
+  const [paymentsList, setPaymentsList] = useState([]);
+  const [paymentsSearchQuery, setPaymentsSearchQuery] = useState('');
+
   useEffect(() => {
     // Fetch Settings (one-time fetch is fine for this)
     const fetchSettings = async () => {
@@ -140,20 +144,39 @@ function AdminPanel() {
     };
     fetchSettings();
 
-    // 1. Listen for Recent Activity
-    const activityQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(5));
-    const unsubscribeActivity = onSnapshot(activityQuery, (snapshot) => {
-      const activities = snapshot.docs.map(doc => ({
-        id: doc.id,
-        type: 'Order',
-        title: `New Order #${doc.id.slice(0, 5)}`,
-        subtitle: `₹${doc.data().amount}`,
-        timestamp: doc.data().createdAt?.toDate() || new Date(),
-        icon: <FaShoppingCart />
-      }));
-      setRecentActivity(activities);
-    }, (error) => {
-      console.error("Error fetching activity:", error);
+    // 1. Listen for Recent Activity (Combined Orders & Bookings)
+    const ordersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(10));
+    const bookingsActQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(10));
+    
+    let ordersData = [];
+    let bookingsActData = [];
+
+    const updateUnifiedActivity = () => {
+      const combined = [
+        ...ordersData.map(d => ({
+          id: d.id, type: 'Order', title: `Sale: ${d.items?.[0]?.brand || 'Vehicle'}`, 
+          subtitle: `₹${parseInt(d.totalAmount || d.amount || 0).toLocaleString()}`, 
+          timestamp: d.createdAt?.toDate ? d.createdAt.toDate() : new Date(),
+          icon: <FaShoppingCart />
+        })),
+        ...bookingsActData.map(d => ({
+          id: d.id, type: 'Booking', title: `Rental: ${d.carModel || 'Vehicle'}`, 
+          subtitle: `₹${parseInt(d.totalPrice || 0).toLocaleString()}`, 
+          timestamp: d.createdAt?.toDate ? d.createdAt.toDate() : new Date(),
+          icon: <FaClipboardList />
+        }))
+      ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+      setRecentActivity(combined);
+    };
+
+    const unsubscribeOrdersAct = onSnapshot(ordersQuery, (snapshot) => {
+      ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      updateUnifiedActivity();
+    });
+
+    const unsubscribeBookingsAct = onSnapshot(bookingsActQuery, (snapshot) => {
+      bookingsActData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      updateUnifiedActivity();
     });
 
     // 2. User Management & Stats Listener
@@ -229,8 +252,21 @@ function AdminPanel() {
       console.error("Error fetching reset requests:", error);
     });
 
+    // 9. Payments Collection Listener & Unified Revenue
+    const paymentsQuery = query(collection(db, 'payments'), orderBy('timestamp', 'desc'));
+    const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
+      const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPaymentsList(payments);
+      
+      const totalRevenue = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+      setStats(prev => ({ ...prev, revenue: totalRevenue }));
+    }, (error) => {
+      console.error("Error fetching payments:", error);
+    });
+
     return () => {
-      unsubscribeActivity();
+      unsubscribeOrdersAct();
+      unsubscribeBookingsAct();
       unsubscribeUsers();
       unsubscribeFleet();
       unsubscribeBookings();
@@ -238,6 +274,7 @@ function AdminPanel() {
       unsubscribeReviews();
       unsubscribeTickets();
       unsubscribeResetRequests();
+      unsubscribePayments();
     };
   }, []);
 
@@ -520,7 +557,10 @@ function AdminPanel() {
                   <td>{b.startDate} to {b.endDate}</td>
                   <td>₹{parseInt(b.totalPrice || 0).toLocaleString()}</td>
                   <td><span className={`status-badge ${b.status}`}>{b.status}</span></td>
-                  <td><span className={`status-badge ${b.paymentStatus === 'paid' ? 'active' : 'pending'}`}>{b.paymentStatus}</span></td>
+                  <td>
+                    <span className={`status-badge ${b.paymentStatus === 'paid' ? 'active' : 'pending'}`}>{b.paymentStatus}</span>
+                    {b.razorpayPaymentId && <p style={{fontSize: '0.65rem', marginTop: '4px', opacity: 0.7}}>{b.razorpayPaymentId}</p>}
+                  </td>
                   <td><div className="table-actions"><button className="action-icn edit" onClick={() => openBookingModal(b)}><FaEdit /></button><button className="action-icn delete" onClick={() => handleBookingAction(b.id, 'delete')}><FaTrash /></button></div></td>
                 </tr>
               ))}
@@ -588,7 +628,12 @@ function AdminPanel() {
                   <td>{t.customerEmail}</td>
                   <td>{t.carDetails || 'N/A'}</td>
                   <td>₹{parseInt(t.amount || 0).toLocaleString()}</td>
-                  <td><span className={`status-badge ${t.status === 'completed' ? 'active' : 'blocked'}`}>{t.status}</span></td>
+                  <td>
+                    <span className={`status-badge ${t.status === 'completed' ? 'active' : (t.paymentStatus === 'success' || t.razorpayPaymentId ? 'active' : 'blocked')}`}>
+                      {t.status}
+                    </span>
+                    {t.razorpayPaymentId && <p style={{fontSize: '0.65rem', marginTop: '4px', opacity: 0.7}}>{t.razorpayPaymentId}</p>}
+                  </td>
                   <td>{t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString() : 'Just now'}</td>
                   <td><div className="table-actions"><button className="action-icn edit" onClick={() => openTransModal(t)}><FaEdit /></button><button className="action-icn delete" onClick={() => handleTransAction(t.id, 'delete')}><FaTrash /></button></div></td>
                 </tr>
@@ -745,6 +790,54 @@ function AdminPanel() {
               ))}
               {filteredRequests.length === 0 && (
                 <tr><td colSpan="5" style={{textAlign: 'center', padding: '2rem'}}>No reset requests found.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPayments = () => {
+    const filteredPayments = paymentsList.filter(p => 
+      (p.paymentId?.toLowerCase().includes(paymentsSearchQuery.toLowerCase())) ||
+      (p.userEmail?.toLowerCase().includes(paymentsSearchQuery.toLowerCase())) ||
+      (p.userId?.toLowerCase().includes(paymentsSearchQuery.toLowerCase()))
+    );
+
+    return (
+      <div className="management-view">
+        <div className="controls-row">
+          <div className="search-box-v5">
+            <input type="text" placeholder="Search by payment ID or email..." value={paymentsSearchQuery} onChange={(e) => setPaymentsSearchQuery(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="data-table-container">
+          <table className="v5-p-table">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Order/Booking ID</th>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPayments.map(p => (
+                <tr key={p.id}>
+                  <td className="u-email" style={{color: 'var(--primary-light)'}}>{p.paymentId || p.razorpayPaymentId}</td>
+                  <td className="u-email">{p.orderId || p.bookingId}</td>
+                  <td>{p.userEmail || p.userId?.slice(0, 8)}</td>
+                  <td><p className="price-v5">₹{parseInt(p.amount || 0).toLocaleString()}</p></td>
+                  <td><span className={`status-badge ${p.paymentStatus === 'success' ? 'active' : 'pending'}`}>{p.paymentStatus}</span></td>
+                  <td>{p.timestamp?.toDate ? p.timestamp.toDate().toLocaleString() : 'Just now'}</td>
+                </tr>
+              ))}
+              {filteredPayments.length === 0 && (
+                <tr><td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>No payment records found.</td></tr>
               )}
             </tbody>
           </table>
@@ -1610,6 +1703,9 @@ function AdminPanel() {
             <div className={`nav-link-v5 ${view === 'transactions' ? 'active' : ''}`} onClick={() => setView('transactions')}>
               <FaWallet /> <span>Sales</span>
             </div>
+            <div className={`nav-link-v5 ${view === 'payments' ? 'active' : ''}`} onClick={() => setView('payments')}>
+              <FaCreditCard /> <span>Payments</span>
+            </div>
             <div className={`nav-link-v5 ${view === 'analytics' ? 'active' : ''}`} onClick={() => setView('analytics')}>
               <FaPoll /> <span>Analytics</span>
             </div>
@@ -1659,6 +1755,7 @@ function AdminPanel() {
             {view === 'reviews' && renderReviews()}
             {view === 'support' && renderSupport()}
             {view === 'resets' && renderResetRequests()}
+            {view === 'payments' && renderPayments()}
             {view === 'settings' && renderSettings()}
             {view === 'analytics' && (
               <Suspense fallback={
