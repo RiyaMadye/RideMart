@@ -176,7 +176,6 @@ export default function RentalBooking() {
 
   const goPrev = () => setStep(s => s - 1);
 
-  // ─── Payment handler
   const handlePayment = async () => {
     const user = auth.currentUser;
     if (!user) { navigate('/login'); return; }
@@ -185,30 +184,11 @@ export default function RentalBooking() {
     setError('');
 
     try {
-      // 1. Create order on the server (Practical Backend Approach)
-      // Replace with your actual deployed function URL if different
-      const functionUrl = 'https://asia-south1-ridemartcom.cloudfunctions.net/createRazorpayOrder';
-      
-      const orderRes = await fetch(functionUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: grandTotal,
-          currency: 'INR'
-        }),
-      });
-
-      if (!orderRes.ok) {
-        throw new Error('Failed to create payment order. Status: ' + orderRes.status);
-      }
-
-      const orderData = await orderRes.json();
-
+      // Purely client-side integration (Works on Spark/Free plan for test mode)
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount: orderData.amount, // use amount from server
-        currency: orderData.currency,
-        order_id: orderData.id, // ID from the server
+        amount: Math.round(grandTotal * 100), // amount in paise
+        currency: 'INR',
         name: 'RideMart Rentals',
         description: `${car.brand} ${car.model} — ${days} day${days > 1 ? 's' : ''}`,
         image: car.imageUrl || '/logo-brand.jpg',
@@ -229,35 +209,7 @@ export default function RentalBooking() {
       displayRazorpay(options);
     } catch (err) {
       console.error('Payment initialization error:', err);
-      setError('Payment initialization failed. Using legacy client-side checkout...');
-      
-      /* 
-      // Fallback to Simple Integration if server fails (optional)
-      const fallbackOptions = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount: grandTotal * 100,
-        currency: 'INR',
-        name: 'RideMart Rentals',
-        description: `${car.brand} ${car.model} — ${days} day${days > 1 ? 's' : ''}`,
-        image: car.imageUrl || '/logo-brand.jpg',
-        prefill: {
-          name: driverName || user.displayName || '',
-          email: user.email,
-          contact: driverPhone,
-        },
-        theme: { color: '#c21807' },
-        handler: async (response) => {
-          // ... same booking logic ...
-          handleBookingAfterPayment(response);
-        },
-        modal: {
-          ondismiss: () => setIsProcessing(false),
-        },
-      };
-      */
-      
-      // For now, let's just show an error if they haven't set up the blaze plan
-      setError('Could not connect to backend. Please ensure Firebase Functions are deployed and Blaze plan is active.');
+      setError('Payment initialization failed. Please check your internet connection.');
       setIsProcessing(false);
     }
   };
