@@ -42,6 +42,16 @@ function Login() {
     setError('');
   };
 
+  const handlePaste = (e) => {
+    const name = e.target.name;
+    if (name === 'password') {
+      const pasteData = e.clipboardData.getData('text');
+      if (/\s/.test(pasteData)) {
+        setPasswordError('Pasted password contained spaces which were removed');
+      }
+    }
+  };
+
   const handleSpaceKey = (e) => {
     if (e.key === ' ') {
       e.preventDefault();
@@ -228,6 +238,7 @@ function Login() {
                     value={formData.password}
                     onChange={handleChange}
                     onKeyDown={handleSpaceKey}
+                    onPaste={handlePaste}
                     required autoComplete="current-password"
                   />
                   <button type="button" className="toggle-pw" onClick={() => setShowPassword(!showPassword)}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { auth, db } from '../firebase/config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { addDoc, collection, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
@@ -7,7 +7,6 @@ import { FaEnvelope, FaExclamationTriangle, FaCheckCircle, FaArrowLeft, FaKey, F
 import './Auth.css';
 
 function ForgotPassword() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,11 +24,18 @@ function ForgotPassword() {
     }
   };
 
+  const handlePaste = (e) => {
+    const pasteData = e.clipboardData.getData('text');
+    if (/\s/.test(pasteData)) {
+      setPasswordError('Pasted password contained spaces which were removed');
+    }
+  };
+
   const handleEmailReset = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    
+
     if (!email) {
       setError('Please enter your email address.');
       return;
@@ -89,7 +95,7 @@ function ForgotPassword() {
       // 2. Log the manual reset request for the backend (Cloud Function / Admin)
       await addDoc(collection(db, 'password_reset_requests'), {
         email: email,
-        newPassword: newPassword, 
+        newPassword: newPassword,
         status: 'pending',
         requestedAt: serverTimestamp(),
         type: 'manual_reset'
@@ -146,8 +152,8 @@ function ForgotPassword() {
             <h2>Password Reset</h2>
             <p>Choose your preferred way to regain access to your account.</p>
             <div className="reset-options-checklist">
-                <div className="check-item"><FaCheckCircle /> Instant via Email</div>
-                <div className="check-item"><FaCheckCircle /> Manual Admin Review</div>
+              <div className="check-item"><FaCheckCircle /> Instant via Email</div>
+              <div className="check-item"><FaCheckCircle /> Manual Admin Review</div>
             </div>
           </div>
         </div>
@@ -161,127 +167,129 @@ function ForgotPassword() {
             </div>
 
             <div className="method-selector">
-                <button 
-                  className={`method-btn ${resetMethod === 'email' ? 'active' : ''}`}
-                  onClick={() => {setResetMethod('email'); setError(''); setMessage('');}}
-                >
-                    <FaEnvelope /> Email Link
-                </button>
-                <button 
-                  className={`method-btn ${resetMethod === 'manual' ? 'active' : ''}`}
-                  onClick={() => {setResetMethod('manual'); setError(''); setMessage('');}}
-                >
-                    <FaLock /> Manual Form
-                </button>
+              <button
+                className={`method-btn ${resetMethod === 'email' ? 'active' : ''}`}
+                onClick={() => { setResetMethod('email'); setError(''); setMessage(''); }}
+              >
+                <FaEnvelope /> Email Link
+              </button>
+              <button
+                className={`method-btn ${resetMethod === 'manual' ? 'active' : ''}`}
+                onClick={() => { setResetMethod('manual'); setError(''); setMessage(''); }}
+              >
+                <FaLock /> Manual Form
+              </button>
             </div>
 
             {error && <div className="auth-error"><FaExclamationTriangle /> {error}</div>}
             {message && <div className="auth-success"><FaCheckCircle /> {message}</div>}
 
             {resetMethod === 'email' ? (
-                <form onSubmit={handleEmailReset} className="auth-form">
-                    <div className="field-group">
-                        <label htmlFor="email">Email Address</label>
-                        <div className="input-wrapper">
-                            <span className="input-icon"><FaEnvelope /></span>
-                            <input
-                                type="email" id="email" name="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <button
-                        type="submit"
-                        className={`auth-submit-btn ${loading ? 'loading' : ''}`}
-                        disabled={loading}
-                    >
-                        {loading ? <span className="spinner"></span> : <><FaPaperPlane /> Send Reset Link</>}
-                    </button>
-                </form>
+              <form onSubmit={handleEmailReset} className="auth-form">
+                <div className="field-group">
+                  <label htmlFor="email">Email Address</label>
+                  <div className="input-wrapper">
+                    <span className="input-icon"><FaEnvelope /></span>
+                    <input
+                      type="email" id="email" name="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className={`auth-submit-btn ${loading ? 'loading' : ''}`}
+                  disabled={loading}
+                >
+                  {loading ? <span className="spinner"></span> : <><FaPaperPlane /> Send Reset Link</>}
+                </button>
+              </form>
             ) : (
-                <form onSubmit={handleManualReset} className="auth-form">
-                    <div className="field-group">
-                        <label htmlFor="email">Email Address</label>
-                        <div className="input-wrapper">
-                            <span className="input-icon"><FaEnvelope /></span>
-                            <input
-                                type="email" id="email" name="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
+              <form onSubmit={handleManualReset} className="auth-form">
+                <div className="field-group">
+                  <label htmlFor="email">Email Address</label>
+                  <div className="input-wrapper">
+                    <span className="input-icon"><FaEnvelope /></span>
+                    <input
+                      type="email" id="email" name="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
 
-                        <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
-                            <span className="input-icon"><FaLock /></span>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                id="newPassword"
-                                name="newPassword"
-                                placeholder="Enter new password"
-                                value={newPassword}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (/\s/.test(val)) {
-                                        setPasswordError('Password cannot contain spaces');
-                                        setNewPassword(val.replace(/\s/g, ''));
-                                    } else {
-                                        setPasswordError('');
-                                        setNewPassword(val);
-                                    }
-                                }}
-                                onKeyDown={handleSpaceKey}
-                                required
-                            />
-                            <button type="button" className="toggle-pw" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                        {passwordError && (
-                            <div className="password-error-text">
-                                <FaExclamationTriangle size={12} /> {passwordError}
-                            </div>
-                        )}
+                <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
+                  <span className="input-icon"><FaLock /></span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="newPassword"
+                    name="newPassword"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/\s/.test(val)) {
+                        setPasswordError('Password cannot contain spaces');
+                        setNewPassword(val.replace(/\s/g, ''));
+                      } else {
+                        setPasswordError('');
+                        setNewPassword(val);
+                      }
+                    }}
+                    onKeyDown={handleSpaceKey}
+                    onPaste={handlePaste}
+                    required
+                  />
+                  <button type="button" className="toggle-pw" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {passwordError && (
+                  <div className="password-error-text">
+                    <FaExclamationTriangle size={12} /> {passwordError}
+                  </div>
+                )}
 
-                    <div className="field-group">
-                        <label htmlFor="confirmPassword">Confirm Password</label>
-                        <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
-                            <span className="input-icon"><FaLock /></span>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                placeholder="Confirm new password"
-                                value={confirmPassword}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (/\s/.test(val)) {
-                                        setPasswordError('Password cannot contain spaces');
-                                        setConfirmPassword(val.replace(/\s/g, ''));
-                                    } else {
-                                        setPasswordError('');
-                                        setConfirmPassword(val);
-                                    }
-                                }}
-                                onKeyDown={handleSpaceKey}
-                                required
-                            />
-                        </div>
-                    </div>
+                <div className="field-group">
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <div className={`input-wrapper ${passwordError ? 'error-border' : ''}`}>
+                    <span className="input-icon"><FaLock /></span>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (/\s/.test(val)) {
+                          setPasswordError('Password cannot contain spaces');
+                          setConfirmPassword(val.replace(/\s/g, ''));
+                        } else {
+                          setPasswordError('');
+                          setConfirmPassword(val);
+                        }
+                      }}
+                      onKeyDown={handleSpaceKey}
+                      onPaste={handlePaste}
+                      required
+                    />
+                  </div>
+                </div>
 
-                    <button
-                        type="submit"
-                        className={`auth-submit-btn ${loading ? 'loading' : ''}`}
-                        disabled={loading}
-                    >
-                        {loading ? <span className="spinner"></span> : 'Submit Reset Request'}
-                    </button>
-                </form>
+                <button
+                  type="submit"
+                  className={`auth-submit-btn ${loading ? 'loading' : ''}`}
+                  disabled={loading}
+                >
+                  {loading ? <span className="spinner"></span> : 'Submit Reset Request'}
+                </button>
+              </form>
             )}
 
             <div className="divider"><span>or back to sign in</span></div>

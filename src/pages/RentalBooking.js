@@ -32,6 +32,15 @@ function daysBetween(start, end) {
 
 function fmt(n) { return n.toLocaleString('en-IN'); }
 
+function getContractText() {
+  return `1. Rental Period: The User agrees to rent the Vehicle for the specified duration.
+2. Vehicle Use: The Vehicle shall be used only for lawful purposes.
+3. Insurance: Basic insurance is included, covering standard damage and theft.
+4. Maintenance: The Owner is responsible for major maintenance.
+5. Return: The Vehicle must be returned in the same condition as received.
+6. Termination: Either party may terminate the agreement for breach of terms.`;
+}
+
 // ── Step indicator ────────────────────────────────────────────
 function StepBar({ step }) {
   const steps = ['Trip Details', 'Add-ons & Review', 'Rental Agreement', 'Payment'];

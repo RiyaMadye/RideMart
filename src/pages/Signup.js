@@ -44,11 +44,23 @@ function Signup() {
         setPasswordError('Password cannot contain spaces');
         value = value.replace(/\s/g, '');
       } else {
+        // Only clear if no other field has a space error (though only one field is changed at a time)
         setPasswordError('');
       }
     }
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+  };
+
+  const handlePaste = (e) => {
+    const name = e.target.name;
+    if (name === 'password' || name === 'confirmPassword') {
+      const pasteData = e.clipboardData.getData('text');
+      if (/\s/.test(pasteData)) {
+        setPasswordError('Pasted password contained spaces which were removed');
+        // The value will be cleaned in handleChange as well, but this provides immediate feedback
+      }
+    }
   };
 
   const handleSpaceKey = (e) => {
@@ -373,6 +385,7 @@ function Signup() {
                       value={formData.password}
                       onChange={handleChange}
                       onKeyDown={handleSpaceKey}
+                      onPaste={handlePaste}
                       required minLength={8}
                       autoComplete="new-password"
                     />
@@ -419,6 +432,7 @@ function Signup() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       onKeyDown={handleSpaceKey}
+                      onPaste={handlePaste}
                       required
                       autoComplete="new-password"
                     />
