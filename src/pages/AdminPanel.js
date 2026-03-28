@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, deleteDoc, doc, getDoc, onSnapshot, query, orderBy, limit, addDoc, updateDoc, setDoc, writeBatch, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { generateSeedData } from '../data/seedData';
@@ -1716,8 +1717,10 @@ function AdminPanel() {
         {/* ── Persistent Sidebar ── */}
         <aside className="admin-nav-v5">
           <div className="nav-brand">
-            <span className="brand-dot"></span>
-            <h2>COMMAND</h2>
+            <Link to="/" style={{display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit'}}>
+              <img src="/logo-brand.jpg" alt="RideMart" style={{width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover'}} />
+              <h2 style={{fontFamily: 'Syne, sans-serif', fontWeight: 800, letterSpacing: '2px', fontSize: '1.2rem', margin: 0}}>RIDEMART</h2>
+            </Link>
           </div>
           <nav className="nav-menu-v5">
             <div className={`nav-link-v5 ${view === 'overview' ? 'active' : ''}`} onClick={() => setView('overview')}>
