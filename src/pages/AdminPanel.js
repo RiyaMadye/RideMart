@@ -1618,9 +1618,11 @@ function AdminPanel() {
                   <div className="form-group-v5">
                     <label>Body Type</label>
                     <select value={carFormData.type} onChange={(e) => setCarFormData({ ...carFormData, type: e.target.value })}>
-                      <option value="SUV">SUV</option><option value="Sedan">Sedan</option>
-                      <option value="Hatchback">Hatchback</option><option value="MPV">MPV</option>
-                      <option value="Pickup">Pickup</option><option value="Coupe">Coupe</option>
+                      <option value="Hatchback">Hatchback</option>
+                      <option value="Sedan">Sedan</option>
+                      <option value="SUV">SUV</option>
+                      <option value="MUV/MPV">MUV/MPV</option>
+                      <option value="Coupe">Coupe</option>
                     </select>
                   </div>
                 </div>

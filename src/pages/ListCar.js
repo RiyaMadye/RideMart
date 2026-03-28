@@ -262,7 +262,12 @@ function ListCar() {
                 <div className="form-group"><label>Year</label><input type="number" name="year" value={formData.year} onChange={handleChange} required /></div>
                 <div className="form-group"><label>Body Type</label>
                   <select name="type" value={formData.type} onChange={handleChange} required>
-                    <option value="">Select</option><option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="Coupe">Coupe</option>
+                    <option value="">Select</option>
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                    <option value="MUV/MPV">MUV/MPV</option>
+                    <option value="Coupe">Coupe</option>
                   </select>
                 </div>
               </div>

@@ -268,11 +268,10 @@ function BuyCars() {
               <label className="filter-label">Body Type</label>
               <select className="filter-select" value={selectedType} onChange={e => setSelectedType(e.target.value)}>
                 <option value="">All Types</option>
+                <option value="Hatchback">Hatchback</option>
                 <option value="Sedan">Sedan</option>
                 <option value="SUV">SUV</option>
-                <option value="Hatchback">Hatchback</option>
-                <option value="MPV">MPV</option>
-                <option value="Pickup">Pickup</option>
+                <option value="MUV/MPV">MUV/MPV</option>
                 <option value="Coupe">Coupe</option>
               </select>
             </div>
