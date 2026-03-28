@@ -4,10 +4,10 @@ import { db } from '../firebase/config';
 import { generateSeedData } from '../data/seedData';
 import { searchCarsAPI, mapApiSpecToFormFields } from '../utils/carsApi';
 import { getCarImages } from '../utils/carImages';
-import { 
+import {
   FaCar, FaUsers, FaShoppingCart, FaChartLine, FaTrash, FaEdit, FaPoll,
   FaCheck, FaPlus, FaArrowUp, FaArrowDown, FaHistory, FaWallet,
-  FaClipboardList, FaStar, FaHeadset, FaBullhorn, FaPaperPlane, FaCog, FaKey, FaCreditCard
+  FaClipboardList, FaStar, FaHeadset, FaBullhorn, FaPaperPlane, FaCog, FaKey, FaCreditCard, FaFileAlt
 } from 'react-icons/fa';
 import './AdminPanel.css';
 const AnalyticsDashboard = React.lazy(() => import('./AnalyticsDashboard'));
@@ -129,6 +129,10 @@ function AdminPanel() {
   const [paymentsList, setPaymentsList] = useState([]);
   const [paymentsSearchQuery, setPaymentsSearchQuery] = useState('');
 
+  // Document Viewer State
+  const [docModalOpen, setDocModalOpen] = useState(false);
+  const [activeDocs, setActiveDocs] = useState(null); // { title: '', docs: { name: url } }
+
   useEffect(() => {
     // Fetch Settings (one-time fetch is fine for this)
     const fetchSettings = async () => {
@@ -147,21 +151,21 @@ function AdminPanel() {
     // 1. Listen for Recent Activity (Combined Orders & Bookings)
     const ordersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(10));
     const bookingsActQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(10));
-    
+
     let ordersData = [];
     let bookingsActData = [];
 
     const updateUnifiedActivity = () => {
       const combined = [
         ...ordersData.map(d => ({
-          id: d.id, type: 'Order', title: `Sale: ${d.items?.[0]?.brand || 'Vehicle'}`, 
-          subtitle: `₹${parseInt(d.totalAmount || d.amount || 0).toLocaleString()}`, 
+          id: d.id, type: 'Order', title: `Sale: ${d.items?.[0]?.brand || 'Vehicle'}`,
+          subtitle: `₹${parseInt(d.totalAmount || d.amount || 0).toLocaleString()}`,
           timestamp: d.createdAt?.toDate ? d.createdAt.toDate() : new Date(),
           icon: <FaShoppingCart />
         })),
         ...bookingsActData.map(d => ({
-          id: d.id, type: 'Booking', title: `Rental: ${d.carModel || 'Vehicle'}`, 
-          subtitle: `₹${parseInt(d.totalPrice || 0).toLocaleString()}`, 
+          id: d.id, type: 'Booking', title: `Rental: ${d.carModel || 'Vehicle'}`,
+          subtitle: `₹${parseInt(d.totalPrice || 0).toLocaleString()}`,
           timestamp: d.createdAt?.toDate ? d.createdAt.toDate() : new Date(),
           icon: <FaClipboardList />
         }))
@@ -257,7 +261,7 @@ function AdminPanel() {
     const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
       const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPaymentsList(payments);
-      
+
       const totalRevenue = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
       setStats(prev => ({ ...prev, revenue: totalRevenue }));
     }, (error) => {
@@ -408,7 +412,7 @@ function AdminPanel() {
         ...carFormData,
         // Keep both brand and make in sync for backwards compat
         brand: carFormData.brand || carFormData.make,
-        make:  carFormData.make  || carFormData.brand,
+        make: carFormData.make || carFormData.brand,
         imageUrl: carFormData.imageUrl || carFormData.images?.[0] || '',
         images: carFormData.imageUrl
           ? [carFormData.imageUrl, ...(carFormData.images || [])].slice(0, 5)
@@ -431,13 +435,13 @@ function AdminPanel() {
       setEditingCar(car);
       setCarFormData({
         brand: car.brand || car.make || '',
-        make:  car.make  || car.brand || '',
+        make: car.make || car.brand || '',
         model: car.model || '',
-        year:  car.year  || '',
+        year: car.year || '',
         price: car.price || '',
         dailyRate: car.dailyRate || '',
         purpose: car.purpose || 'sale',
-        status:  car.status  || 'pending',
+        status: car.status || 'pending',
         isFeatured: car.isFeatured || false,
         ownerEmail: car.ownerEmail || 'admin@ridemart.com',
         images: car.images || [],
@@ -523,9 +527,9 @@ function AdminPanel() {
   };
 
   const renderBookings = () => {
-    const filteredBookings = bookingsList.filter(b => 
-      (b.renterEmail?.toLowerCase().includes(bookingSearchQuery.toLowerCase()) || 
-       b.carModel?.toLowerCase().includes(bookingSearchQuery.toLowerCase())) &&
+    const filteredBookings = bookingsList.filter(b =>
+      (b.renterEmail?.toLowerCase().includes(bookingSearchQuery.toLowerCase()) ||
+        b.carModel?.toLowerCase().includes(bookingSearchQuery.toLowerCase())) &&
       (bookingFilterStatus === 'all' || b.status === bookingFilterStatus)
     );
 
@@ -559,7 +563,7 @@ function AdminPanel() {
                   <td><span className={`status-badge ${b.status}`}>{b.status}</span></td>
                   <td>
                     <span className={`status-badge ${b.paymentStatus === 'paid' ? 'active' : 'pending'}`}>{b.paymentStatus}</span>
-                    {b.razorpayPaymentId && <p style={{fontSize: '0.65rem', marginTop: '4px', opacity: 0.7}}>{b.razorpayPaymentId}</p>}
+                    {b.razorpayPaymentId && <p style={{ fontSize: '0.65rem', marginTop: '4px', opacity: 0.7 }}>{b.razorpayPaymentId}</p>}
                   </td>
                   <td><div className="table-actions"><button className="action-icn edit" onClick={() => openBookingModal(b)}><FaEdit /></button><button className="action-icn delete" onClick={() => handleBookingAction(b.id, 'delete')}><FaTrash /></button></div></td>
                 </tr>
@@ -572,22 +576,22 @@ function AdminPanel() {
             <div className="modal-v5">
               <div className="modal-header-v5"><h2>{editingBooking ? 'Edit Booking' : 'Manual Booking'}</h2><button className="close-btn" onClick={() => setIsBookingModalOpen(false)}>×</button></div>
               <form onSubmit={handleSaveBooking} className="modal-form-v5">
-                <div className="form-group-v5"><label>Renter Email</label><input type="email" required value={bookingFormData.renterEmail} onChange={(e) => setBookingFormData({...bookingFormData, renterEmail: e.target.value})} /></div>
+                <div className="form-group-v5"><label>Renter Email</label><input type="email" required value={bookingFormData.renterEmail} onChange={(e) => setBookingFormData({ ...bookingFormData, renterEmail: e.target.value })} /></div>
                 <div className="form-row-v5">
-                   <div className="form-group-v5"><label>Car Make</label><input type="text" required value={bookingFormData.carMake} onChange={(e) => setBookingFormData({...bookingFormData, carMake: e.target.value})} /></div>
-                   <div className="form-group-v5"><label>Car Model</label><input type="text" required value={bookingFormData.carModel} onChange={(e) => setBookingFormData({...bookingFormData, carModel: e.target.value})} /></div>
+                  <div className="form-group-v5"><label>Car Make</label><input type="text" required value={bookingFormData.carMake} onChange={(e) => setBookingFormData({ ...bookingFormData, carMake: e.target.value })} /></div>
+                  <div className="form-group-v5"><label>Car Model</label><input type="text" required value={bookingFormData.carModel} onChange={(e) => setBookingFormData({ ...bookingFormData, carModel: e.target.value })} /></div>
                 </div>
                 <div className="form-row-v5">
-                   <div className="form-group-v5"><label>Start Date</label><input type="date" required value={bookingFormData.startDate} onChange={(e) => setBookingFormData({...bookingFormData, startDate: e.target.value})} /></div>
-                   <div className="form-group-v5"><label>End Date</label><input type="date" required value={bookingFormData.endDate} onChange={(e) => setBookingFormData({...bookingFormData, endDate: e.target.value})} /></div>
+                  <div className="form-group-v5"><label>Start Date</label><input type="date" required value={bookingFormData.startDate} onChange={(e) => setBookingFormData({ ...bookingFormData, startDate: e.target.value })} /></div>
+                  <div className="form-group-v5"><label>End Date</label><input type="date" required value={bookingFormData.endDate} onChange={(e) => setBookingFormData({ ...bookingFormData, endDate: e.target.value })} /></div>
                 </div>
                 <div className="form-row-v5">
-                   <div className="form-group-v5"><label>Total Price</label><input type="number" required value={bookingFormData.totalPrice} onChange={(e) => setBookingFormData({...bookingFormData, totalPrice: e.target.value})} /></div>
-                   <div className="form-group-v5"><label>Status</label>
-                    <select value={bookingFormData.status} onChange={(e) => setBookingFormData({...bookingFormData, status: e.target.value})}>
+                  <div className="form-group-v5"><label>Total Price</label><input type="number" required value={bookingFormData.totalPrice} onChange={(e) => setBookingFormData({ ...bookingFormData, totalPrice: e.target.value })} /></div>
+                  <div className="form-group-v5"><label>Status</label>
+                    <select value={bookingFormData.status} onChange={(e) => setBookingFormData({ ...bookingFormData, status: e.target.value })}>
                       <option value="pending">Pending</option><option value="active">Active</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
                     </select>
-                   </div>
+                  </div>
                 </div>
                 <div className="modal-footer-v5"><button type="button" className="cancel-btn-v5" onClick={() => setIsBookingModalOpen(false)}>Cancel</button><button type="submit" className="save-btn-v5">Save Booking</button></div>
               </form>
@@ -599,9 +603,9 @@ function AdminPanel() {
   };
 
   const renderTransactions = () => {
-    const filteredTrans = transactionsList.filter(t => 
-      (t.customerEmail?.toLowerCase().includes(transSearchQuery.toLowerCase()) || 
-       t.id?.toLowerCase().includes(transSearchQuery.toLowerCase())) &&
+    const filteredTrans = transactionsList.filter(t =>
+      (t.customerEmail?.toLowerCase().includes(transSearchQuery.toLowerCase()) ||
+        t.id?.toLowerCase().includes(transSearchQuery.toLowerCase())) &&
       (transFilterStatus === 'all' || t.status === transFilterStatus)
     );
 
@@ -612,7 +616,7 @@ function AdminPanel() {
             <input type="text" placeholder="Search transactions..." value={transSearchQuery} onChange={(e) => setTransSearchQuery(e.target.value)} />
           </div>
           <div className="filters-group-v5">
-             <select value={transFilterStatus} onChange={(e) => setTransFilterStatus(e.target.value)}>
+            <select value={transFilterStatus} onChange={(e) => setTransFilterStatus(e.target.value)}>
               <option value="all">All Status</option><option value="completed">Completed</option><option value="pending">Pending</option><option value="failed">Failed</option>
             </select>
             <button className="add-btn-v5" onClick={() => openTransModal()}><FaPlus /> Record Sale</button>
@@ -624,7 +628,7 @@ function AdminPanel() {
             <tbody>
               {filteredTrans.map(t => (
                 <tr key={t.id}>
-                  <td className="u-email">{t.id.slice(0,10)}...</td>
+                  <td className="u-email">{t.id.slice(0, 10)}...</td>
                   <td>{t.customerEmail}</td>
                   <td>{t.carDetails || 'N/A'}</td>
                   <td>₹{parseInt(t.amount || 0).toLocaleString()}</td>
@@ -632,7 +636,7 @@ function AdminPanel() {
                     <span className={`status-badge ${t.status === 'completed' ? 'active' : (t.paymentStatus === 'success' || t.razorpayPaymentId ? 'active' : 'blocked')}`}>
                       {t.status}
                     </span>
-                    {t.razorpayPaymentId && <p style={{fontSize: '0.65rem', marginTop: '4px', opacity: 0.7}}>{t.razorpayPaymentId}</p>}
+                    {t.razorpayPaymentId && <p style={{ fontSize: '0.65rem', marginTop: '4px', opacity: 0.7 }}>{t.razorpayPaymentId}</p>}
                   </td>
                   <td>{t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString() : 'Just now'}</td>
                   <td><div className="table-actions"><button className="action-icn edit" onClick={() => openTransModal(t)}><FaEdit /></button><button className="action-icn delete" onClick={() => handleTransAction(t.id, 'delete')}><FaTrash /></button></div></td>
@@ -644,19 +648,19 @@ function AdminPanel() {
         {isTransModalOpen && (
           <div className="modal-overlay-v5">
             <div className="modal-v5">
-               <div className="modal-header-v5"><h2>{editingTrans ? 'Edit Transaction' : 'Record New Transaction'}</h2><button className="close-btn" onClick={() => setIsTransModalOpen(false)}>×</button></div>
+              <div className="modal-header-v5"><h2>{editingTrans ? 'Edit Transaction' : 'Record New Transaction'}</h2><button className="close-btn" onClick={() => setIsTransModalOpen(false)}>×</button></div>
               <form onSubmit={handleSaveTrans} className="modal-form-v5">
-                 <div className="form-group-v5"><label>Customer Email</label><input type="email" required value={transFormData.customerEmail} onChange={(e) => setTransFormData({...transFormData, customerEmail: e.target.value})} /></div>
-                 <div className="form-group-v5"><label>Item / Details</label><input type="text" required value={transFormData.carDetails} onChange={(e) => setTransFormData({...transFormData, carDetails: e.target.value})} /></div>
-                 <div className="form-row-v5">
-                  <div className="form-group-v5"><label>Amount (₹)</label><input type="number" required value={transFormData.amount} onChange={(e) => setTransFormData({...transFormData, amount: e.target.value})} /></div>
+                <div className="form-group-v5"><label>Customer Email</label><input type="email" required value={transFormData.customerEmail} onChange={(e) => setTransFormData({ ...transFormData, customerEmail: e.target.value })} /></div>
+                <div className="form-group-v5"><label>Item / Details</label><input type="text" required value={transFormData.carDetails} onChange={(e) => setTransFormData({ ...transFormData, carDetails: e.target.value })} /></div>
+                <div className="form-row-v5">
+                  <div className="form-group-v5"><label>Amount (₹)</label><input type="number" required value={transFormData.amount} onChange={(e) => setTransFormData({ ...transFormData, amount: e.target.value })} /></div>
                   <div className="form-group-v5"><label>Status</label>
-                    <select value={transFormData.status} onChange={(e) => setTransFormData({...transFormData, status: e.target.value})}>
+                    <select value={transFormData.status} onChange={(e) => setTransFormData({ ...transFormData, status: e.target.value })}>
                       <option value="completed">Completed</option><option value="pending">Pending</option><option value="failed">Failed</option>
                     </select>
                   </div>
                 </div>
-                 <div className="modal-footer-v5"><button type="button" className="cancel-btn-v5" onClick={() => setIsTransModalOpen(false)}>Cancel</button><button type="submit" className="save-btn-v5">Save Record</button></div>
+                <div className="modal-footer-v5"><button type="button" className="cancel-btn-v5" onClick={() => setIsTransModalOpen(false)}>Cancel</button><button type="submit" className="save-btn-v5">Save Record</button></div>
               </form>
             </div>
           </div>
@@ -741,7 +745,7 @@ function AdminPanel() {
   };
 
   const renderResetRequests = () => {
-    const filteredRequests = resetRequests.filter(r => 
+    const filteredRequests = resetRequests.filter(r =>
       (r.email?.toLowerCase().includes(resetSearchQuery.toLowerCase())) &&
       (resetFilterStatus === 'all' || r.status === resetFilterStatus)
     );
@@ -761,11 +765,11 @@ function AdminPanel() {
           </div>
         </div>
 
-        <div className="alert-v5 info" style={{margin: '1rem 0', background: 'rgba(66, 133, 244, 0.1)', color: '#4285f4', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(66,133,244,0.3)'}}>
-            <FaKey style={{marginRight: '0.5rem'}} />
-            <strong>How to process:</strong> Client-side code cannot update other users' passwords for security. To fulfill a request: 
-            1. Copy the email. 2. Go to <strong>Firebase Console &gt; Authentication &gt; Users</strong>. 3. Search for the user. 
-            4. Click the three dots -&gt; <strong>Reset password</strong> or set it manually. 5. Mark as "Completed" here.
+        <div className="alert-v5 info" style={{ margin: '1rem 0', background: 'rgba(66, 133, 244, 0.1)', color: '#4285f4', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(66,133,244,0.3)' }}>
+          <FaKey style={{ marginRight: '0.5rem' }} />
+          <strong>How to process:</strong> Client-side code cannot update other users' passwords for security. To fulfill a request:
+          1. Copy the email. 2. Go to <strong>Firebase Console &gt; Authentication &gt; Users</strong>. 3. Search for the user.
+          4. Click the three dots -&gt; <strong>Reset password</strong> or set it manually. 5. Mark as "Completed" here.
         </div>
 
         <div className="data-table-container">
@@ -775,7 +779,7 @@ function AdminPanel() {
               {filteredRequests.map(r => (
                 <tr key={r.id}>
                   <td>{r.email}</td>
-                  <td><code style={{background: 'rgba(255,255,255,0.1)', padding: '2px 5px', borderRadius: '4px'}}>{r.newPassword}</code></td>
+                  <td><code style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 5px', borderRadius: '4px' }}>{r.newPassword}</code></td>
                   <td>{r.requestedAt?.toDate ? r.requestedAt.toDate().toLocaleString() : 'Just now'}</td>
                   <td><span className={`status-badge ${r.status}`}>{r.status}</span></td>
                   <td>
@@ -789,7 +793,7 @@ function AdminPanel() {
                 </tr>
               ))}
               {filteredRequests.length === 0 && (
-                <tr><td colSpan="5" style={{textAlign: 'center', padding: '2rem'}}>No reset requests found.</td></tr>
+                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>No reset requests found.</td></tr>
               )}
             </tbody>
           </table>
@@ -799,7 +803,7 @@ function AdminPanel() {
   };
 
   const renderPayments = () => {
-    const filteredPayments = paymentsList.filter(p => 
+    const filteredPayments = paymentsList.filter(p =>
       (p.paymentId?.toLowerCase().includes(paymentsSearchQuery.toLowerCase())) ||
       (p.userEmail?.toLowerCase().includes(paymentsSearchQuery.toLowerCase())) ||
       (p.userId?.toLowerCase().includes(paymentsSearchQuery.toLowerCase()))
@@ -828,7 +832,7 @@ function AdminPanel() {
             <tbody>
               {filteredPayments.map(p => (
                 <tr key={p.id}>
-                  <td className="u-email" style={{color: 'var(--primary-light)'}}>{p.paymentId || p.razorpayPaymentId}</td>
+                  <td className="u-email" style={{ color: 'var(--primary-light)' }}>{p.paymentId || p.razorpayPaymentId}</td>
                   <td className="u-email">{p.orderId || p.bookingId}</td>
                   <td>{p.userEmail || p.userId?.slice(0, 8)}</td>
                   <td><p className="price-v5">₹{parseInt(p.amount || 0).toLocaleString()}</p></td>
@@ -837,7 +841,7 @@ function AdminPanel() {
                 </tr>
               ))}
               {filteredPayments.length === 0 && (
-                <tr><td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>No payment records found.</td></tr>
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No payment records found.</td></tr>
               )}
             </tbody>
           </table>
@@ -851,18 +855,18 @@ function AdminPanel() {
       <div className="controls-row">
         <div className="filters-group-v5">
           {['general', 'financial', 'security'].map(tab => (
-            <button 
+            <button
               key={tab}
               className={`tab-btn`}
               onClick={() => setActiveSettingsTab(tab)}
               style={{
-                padding:'0.6rem 1.2rem', 
-                background: activeSettingsTab === tab ? 'var(--primary)' : 'transparent', 
-                border:'1px solid var(--border-color)', 
-                borderRadius:'10px', 
-                color:'white', 
-                cursor:'pointer', 
-                marginRight:'0.5rem',
+                padding: '0.6rem 1.2rem',
+                background: activeSettingsTab === tab ? 'var(--primary)' : 'transparent',
+                border: '1px solid var(--border-color)',
+                borderRadius: '10px',
+                color: 'white',
+                cursor: 'pointer',
+                marginRight: '0.5rem',
                 fontWeight: activeSettingsTab === tab ? '700' : '500',
                 textTransform: 'capitalize'
               }}
@@ -874,45 +878,45 @@ function AdminPanel() {
         <button className="save-btn-v5" onClick={saveSettings}>Save Changes</button>
       </div>
 
-      <div className="settings-container" style={{background: 'var(--bg-surface)', padding: '2.5rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '900px'}}>
-        
+      <div className="settings-container" style={{ background: 'var(--bg-surface)', padding: '2.5rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '900px' }}>
+
         {activeSettingsTab === 'general' && (
           <div className="settings-section">
-            <h3 style={{marginBottom: '1.5rem', color: 'var(--text-white)'}}>General Configuration</h3>
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-white)' }}>General Configuration</h3>
             <div className="form-row-v5">
               <div className="form-group-v5"><label>Platform Name</label><input type="text" name="siteName" value={platformSettings.siteName} onChange={handleSettingChange} /></div>
               <div className="form-group-v5"><label>Support Email</label><input type="email" name="supportEmail" value={platformSettings.supportEmail} onChange={handleSettingChange} /></div>
             </div>
             <div className="form-group-v5"><label>Homepage Banner Message</label><input type="text" name="bannerMessage" value={platformSettings.bannerMessage} onChange={handleSettingChange} /></div>
-            
-            <h3 style={{margin: '2.5rem 0 1.5rem', color: 'var(--text-white)'}}>Feature Toggles</h3>
-            <div className="checkbox-group-v5" style={{marginBottom: '1rem'}}><input type="checkbox" id="maintenance" name="maintenanceMode" checked={platformSettings.maintenanceMode} onChange={handleSettingChange} /><label htmlFor="maintenance">Enable Maintenance Mode (Blocks user access)</label></div>
+
+            <h3 style={{ margin: '2.5rem 0 1.5rem', color: 'var(--text-white)' }}>Feature Toggles</h3>
+            <div className="checkbox-group-v5" style={{ marginBottom: '1rem' }}><input type="checkbox" id="maintenance" name="maintenanceMode" checked={platformSettings.maintenanceMode} onChange={handleSettingChange} /><label htmlFor="maintenance">Enable Maintenance Mode (Blocks user access)</label></div>
             <div className="checkbox-group-v5"><input type="checkbox" id="registrations" name="allowRegistrations" checked={platformSettings.allowRegistrations} onChange={handleSettingChange} /><label htmlFor="registrations">Allow New User Registrations</label></div>
           </div>
         )}
 
         {activeSettingsTab === 'financial' && (
           <div className="settings-section">
-            <h3 style={{marginBottom: '1.5rem', color: 'var(--text-white)'}}>Commission & Fees</h3>
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-white)' }}>Commission & Fees</h3>
             <div className="form-row-v5">
               <div className="form-group-v5"><label>Sales Commission (%)</label><input type="number" name="commissionSale" value={platformSettings.commissionSale} onChange={handleSettingChange} /></div>
               <div className="form-group-v5"><label>Rental Commission (%)</label><input type="number" name="commissionRent" value={platformSettings.commissionRent} onChange={handleSettingChange} /></div>
             </div>
             <div className="form-group-v5"><label>Currency</label><select name="currency" value={platformSettings.currency} onChange={handleSettingChange}><option value="INR">INR (₹)</option><option value="USD">USD ($)</option><option value="EUR">EUR (€)</option></select></div>
 
-            <h3 style={{margin: '2.5rem 0 1.5rem', color: 'var(--text-white)'}}>Payment Gateways</h3>
+            <h3 style={{ margin: '2.5rem 0 1.5rem', color: 'var(--text-white)' }}>Payment Gateways</h3>
             <div className="form-group-v5"><label>Stripe Public Key</label><input type="password" name="stripeKey" value={platformSettings.stripeKey} onChange={handleSettingChange} /></div>
           </div>
         )}
 
         {activeSettingsTab === 'security' && (
           <div className="settings-section">
-            <h3 style={{marginBottom: '1.5rem', color: 'var(--text-white)'}}>Security Policies</h3>
-            <div className="checkbox-group-v5" style={{marginBottom: '1rem'}}><input type="checkbox" id="verification" name="requireVerification" checked={platformSettings.requireVerification} onChange={handleSettingChange} /><label htmlFor="verification">Require Identity Verification for Sellers</label></div>
-            
-            <h3 style={{margin: '2.5rem 0 1rem', color: 'var(--text-white)'}}>Admin Management</h3>
-            <p style={{color: 'var(--text-muted)', marginBottom: '1.5rem'}}>Manage users with administrative privileges in the Users tab.</p>
-            <button className="add-btn-v5" onClick={() => setView('users')} style={{display: 'inline-flex', width: 'auto'}}>Manage Admins</button>
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-white)' }}>Security Policies</h3>
+            <div className="checkbox-group-v5" style={{ marginBottom: '1rem' }}><input type="checkbox" id="verification" name="requireVerification" checked={platformSettings.requireVerification} onChange={handleSettingChange} /><label htmlFor="verification">Require Identity Verification for Sellers</label></div>
+
+            <h3 style={{ margin: '2.5rem 0 1rem', color: 'var(--text-white)' }}>Admin Management</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Manage users with administrative privileges in the Users tab.</p>
+            <button className="add-btn-v5" onClick={() => setView('users')} style={{ display: 'inline-flex', width: 'auto' }}>Manage Admins</button>
           </div>
         )}
       </div>
@@ -940,11 +944,11 @@ function AdminPanel() {
     const ticketRef = doc(db, 'tickets', selectedTicket.id);
     // Assuming 'responses' is an array field
     const currentResponses = selectedTicket.responses || [];
-    await updateDoc(ticketRef, { 
+    await updateDoc(ticketRef, {
       responses: [...currentResponses, newResponse],
       status: 'active' // Re-open if pending
     });
-    
+
     setTicketReply('');
     // Update local selected ticket state immediately for UI responsiveness (though onSnapshot will catch it)
     setSelectedTicket(prev => ({ ...prev, responses: [...(prev.responses || []), newResponse] }));
@@ -973,30 +977,30 @@ function AdminPanel() {
       <div className="management-view">
         <div className="dashboard-row-2">
           {/* Tickets Section */}
-          <div style={{gridColumn: '1 / -1'}}>
+          <div style={{ gridColumn: '1 / -1' }}>
             <div className="controls-row">
-               <div className="filters-group-v5">
-                 <button className={`tab-btn ${ticketFilter === 'open' ? 'active' : ''}`} onClick={() => setTicketFilter('open')} style={{padding:'0.5rem 1rem', background: ticketFilter === 'open' ? 'var(--primary)' : 'transparent', border:'1px solid var(--border-color)', borderRadius:'8px', color:'white', cursor:'pointer', marginRight:'0.5rem'}}>Open Tickets</button>
-                 <button className={`tab-btn ${ticketFilter === 'resolved' ? 'active' : ''}`} onClick={() => setTicketFilter('resolved')} style={{padding:'0.5rem 1rem', background: ticketFilter === 'resolved' ? 'var(--primary)' : 'transparent', border:'1px solid var(--border-color)', borderRadius:'8px', color:'white', cursor:'pointer', marginRight:'0.5rem'}}>Resolved</button>
-                 <button className={`tab-btn ${ticketFilter === 'all' ? 'active' : ''}`} onClick={() => setTicketFilter('all')} style={{padding:'0.5rem 1rem', background: ticketFilter === 'all' ? 'var(--primary)' : 'transparent', border:'1px solid var(--border-color)', borderRadius:'8px', color:'white', cursor:'pointer'}}>All History</button>
-               </div>
-               <button className="add-btn-v5" onClick={() => setIsAnnouncementModalOpen(true)}><FaBullhorn /> New Announcement</button>
+              <div className="filters-group-v5">
+                <button className={`tab-btn ${ticketFilter === 'open' ? 'active' : ''}`} onClick={() => setTicketFilter('open')} style={{ padding: '0.5rem 1rem', background: ticketFilter === 'open' ? 'var(--primary)' : 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', cursor: 'pointer', marginRight: '0.5rem' }}>Open Tickets</button>
+                <button className={`tab-btn ${ticketFilter === 'resolved' ? 'active' : ''}`} onClick={() => setTicketFilter('resolved')} style={{ padding: '0.5rem 1rem', background: ticketFilter === 'resolved' ? 'var(--primary)' : 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', cursor: 'pointer', marginRight: '0.5rem' }}>Resolved</button>
+                <button className={`tab-btn ${ticketFilter === 'all' ? 'active' : ''}`} onClick={() => setTicketFilter('all')} style={{ padding: '0.5rem 1rem', background: ticketFilter === 'all' ? 'var(--primary)' : 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', cursor: 'pointer' }}>All History</button>
+              </div>
+              <button className="add-btn-v5" onClick={() => setIsAnnouncementModalOpen(true)}><FaBullhorn /> New Announcement</button>
             </div>
-            
+
             <div className="data-table-container">
               <table className="v5-p-table">
                 <thead><tr><th>Subject</th><th>User</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {filteredTickets.length === 0 ? <tr><td colSpan="5" style={{textAlign:'center', padding:'2rem', color:'var(--text-muted)'}}>No tickets found</td></tr> : 
-                  filteredTickets.map(t => (
-                    <tr key={t.id}>
-                      <td style={{fontWeight:'600'}}>{t.subject}</td>
-                      <td className="u-email">{t.userEmail}</td>
-                      <td><span className={`status-badge ${t.status === 'resolved' ? 'active' : 'pending'}`}>{t.status}</span></td>
-                      <td>{t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString() : 'Recent'}</td>
-                      <td><button className="action-icn edit" onClick={() => setSelectedTicket(t)}><FaPaperPlane /></button></td>
-                    </tr>
-                  ))}
+                  {filteredTickets.length === 0 ? <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No tickets found</td></tr> :
+                    filteredTickets.map(t => (
+                      <tr key={t.id}>
+                        <td style={{ fontWeight: '600' }}>{t.subject}</td>
+                        <td className="u-email">{t.userEmail}</td>
+                        <td><span className={`status-badge ${t.status === 'resolved' ? 'active' : 'pending'}`}>{t.status}</span></td>
+                        <td>{t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString() : 'Recent'}</td>
+                        <td><button className="action-icn edit" onClick={() => setSelectedTicket(t)}><FaPaperPlane /></button></td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -1008,24 +1012,24 @@ function AdminPanel() {
           <div className="modal-overlay-v5">
             <div className="modal-v5">
               <div className="modal-header-v5"><h2>Ticket: {selectedTicket.subject}</h2><button className="close-btn" onClick={() => setSelectedTicket(null)}>×</button></div>
-              <div style={{maxHeight:'400px', overflowY:'auto', marginBottom:'1rem', background:'rgba(0,0,0,0.2)', padding:'1rem', borderRadius:'8px'}}>
-                <div style={{marginBottom:'1rem', paddingBottom:'1rem', borderBottom:'1px solid var(--border-color)'}}>
-                  <p style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>From: {selectedTicket.userEmail}</p>
+              <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>From: {selectedTicket.userEmail}</p>
                   <p>{selectedTicket.message}</p>
                 </div>
                 {(selectedTicket.responses || []).map((r, i) => (
-                  <div key={i} style={{marginBottom:'0.5rem', textAlign: r.sender === 'admin' ? 'right' : 'left'}}>
-                    <span style={{background: r.sender === 'admin' ? 'var(--primary)' : 'var(--bg-surface)', padding:'0.5rem 1rem', borderRadius:'12px', display:'inline-block', fontSize:'0.9rem'}}>{r.message}</span>
+                  <div key={i} style={{ marginBottom: '0.5rem', textAlign: r.sender === 'admin' ? 'right' : 'left' }}>
+                    <span style={{ background: r.sender === 'admin' ? 'var(--primary)' : 'var(--bg-surface)', padding: '0.5rem 1rem', borderRadius: '12px', display: 'inline-block', fontSize: '0.9rem' }}>{r.message}</span>
                   </div>
                 ))}
               </div>
               {selectedTicket.status !== 'resolved' ? (
-                <form onSubmit={handleTicketReply} style={{display:'flex', gap:'0.5rem'}}>
-                  <input type="text" value={ticketReply} onChange={(e) => setTicketReply(e.target.value)} placeholder="Type a reply..." style={{flex:1, padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border-color)', background:'var(--bg-main)', color:'white'}} />
+                <form onSubmit={handleTicketReply} style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input type="text" value={ticketReply} onChange={(e) => setTicketReply(e.target.value)} placeholder="Type a reply..." style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-main)', color: 'white' }} />
                   <button type="submit" className="save-btn-v5"><FaPaperPlane /></button>
-                  <button type="button" className="cancel-btn-v5" onClick={() => handleResolveTicket(selectedTicket.id)} style={{background:'#10b981', color:'white'}}>Resolve</button>
+                  <button type="button" className="cancel-btn-v5" onClick={() => handleResolveTicket(selectedTicket.id)} style={{ background: '#10b981', color: 'white' }}>Resolve</button>
                 </form>
-              ) : <div style={{textAlign:'center', color:'#10b981', fontWeight:'bold'}}>This ticket is resolved</div>}
+              ) : <div style={{ textAlign: 'center', color: '#10b981', fontWeight: 'bold' }}>This ticket is resolved</div>}
             </div>
           </div>
         )}
@@ -1036,16 +1040,16 @@ function AdminPanel() {
             <div className="modal-v5">
               <div className="modal-header-v5"><h2>Create Announcement</h2><button className="close-btn" onClick={() => setIsAnnouncementModalOpen(false)}>×</button></div>
               <form onSubmit={handleSendAnnouncement} className="modal-form-v5">
-                <div className="form-group-v5"><label>Title</label><input type="text" required value={announcementFormData.title} onChange={(e) => setAnnouncementFormData({...announcementFormData, title: e.target.value})} /></div>
-                <div className="form-group-v5"><label>Message</label><textarea required rows="4" value={announcementFormData.message} onChange={(e) => setAnnouncementFormData({...announcementFormData, message: e.target.value})} style={{width:'100%', padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border-color)', background:'var(--bg-main)', color:'white'}}></textarea></div>
+                <div className="form-group-v5"><label>Title</label><input type="text" required value={announcementFormData.title} onChange={(e) => setAnnouncementFormData({ ...announcementFormData, title: e.target.value })} /></div>
+                <div className="form-group-v5"><label>Message</label><textarea required rows="4" value={announcementFormData.message} onChange={(e) => setAnnouncementFormData({ ...announcementFormData, message: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-main)', color: 'white' }}></textarea></div>
                 <div className="form-row-v5">
                   <div className="form-group-v5"><label>Target Audience</label>
-                    <select value={announcementFormData.target} onChange={(e) => setAnnouncementFormData({...announcementFormData, target: e.target.value})}>
+                    <select value={announcementFormData.target} onChange={(e) => setAnnouncementFormData({ ...announcementFormData, target: e.target.value })}>
                       <option value="all">All Users</option><option value="buyers">Buyers Only</option><option value="sellers">Sellers Only</option>
                     </select>
                   </div>
                   <div className="form-group-v5"><label>Type</label>
-                    <select value={announcementFormData.type} onChange={(e) => setAnnouncementFormData({...announcementFormData, type: e.target.value})}>
+                    <select value={announcementFormData.type} onChange={(e) => setAnnouncementFormData({ ...announcementFormData, type: e.target.value })}>
                       <option value="info">Info</option><option value="alert">Alert</option><option value="promo">Promo</option>
                     </select>
                   </div>
@@ -1060,10 +1064,10 @@ function AdminPanel() {
   };
 
   const renderReviews = () => {
-    const filteredReviews = reviewsList.filter(r => 
-      (r.userName?.toLowerCase().includes(reviewSearchQuery.toLowerCase()) || 
-       r.review?.toLowerCase().includes(reviewSearchQuery.toLowerCase()) ||
-       r.title?.toLowerCase().includes(reviewSearchQuery.toLowerCase()))
+    const filteredReviews = reviewsList.filter(r =>
+    (r.userName?.toLowerCase().includes(reviewSearchQuery.toLowerCase()) ||
+      r.review?.toLowerCase().includes(reviewSearchQuery.toLowerCase()) ||
+      r.title?.toLowerCase().includes(reviewSearchQuery.toLowerCase()))
     );
 
     return (
@@ -1079,9 +1083,9 @@ function AdminPanel() {
             <tbody>
               {filteredReviews.map(r => (
                 <tr key={r.id}>
-                  <td><div className="user-cell"><div style={{width:30,height:30,borderRadius:'50%',background:'#eee',display:'flex',alignItems:'center',justifyContent:'center',color:'#333',fontWeight:'bold'}}>{r.userName?.[0]}</div><div><p className="u-name">{r.userName || 'Anonymous'}</p><p className="u-email">{r.userEmail}</p></div></div></td>
-                  <td><div style={{color:'#fbbf24',display:'flex'}}>{[...Array(5)].map((_, i) => <FaStar key={i} style={{opacity: i < r.rating ? 1 : 0.3}} />)}</div></td>
-                  <td style={{maxWidth:'300px'}}><strong>{r.title}</strong><p style={{fontSize:'0.8rem',color:'var(--text-muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.review}</p></td>
+                  <td><div className="user-cell"><div style={{ width: 30, height: 30, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontWeight: 'bold' }}>{r.userName?.[0]}</div><div><p className="u-name">{r.userName || 'Anonymous'}</p><p className="u-email">{r.userEmail}</p></div></div></td>
+                  <td><div style={{ color: '#fbbf24', display: 'flex' }}>{[...Array(5)].map((_, i) => <FaStar key={i} style={{ opacity: i < r.rating ? 1 : 0.3 }} />)}</div></td>
+                  <td style={{ maxWidth: '300px' }}><strong>{r.title}</strong><p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.review}</p></td>
                   <td><button className={`verify-toggle ${r.approved ? 'verified' : 'pending'}`} onClick={() => handleReviewAction(r.id, 'toggleApproval', !r.approved)}>{r.approved ? <><FaCheck /> Approved</> : 'Pending'}</button></td>
                   <td><div className="table-actions"><button className="action-icn edit" onClick={() => openReviewModal(r)}><FaEdit /></button><button className="action-icn delete" onClick={() => handleReviewAction(r.id, 'delete')}><FaTrash /></button></div></td>
                 </tr>
@@ -1094,22 +1098,22 @@ function AdminPanel() {
             <div className="modal-v5">
               <div className="modal-header-v5"><h2>Edit Review</h2><button className="close-btn" onClick={() => setIsReviewModalOpen(false)}>×</button></div>
               <form onSubmit={handleSaveReview} className="modal-form-v5">
-                <div className="form-group-v5"><label>User Name</label><input type="text" value={reviewFormData.userName} disabled style={{opacity:0.7}} /></div>
+                <div className="form-group-v5"><label>User Name</label><input type="text" value={reviewFormData.userName} disabled style={{ opacity: 0.7 }} /></div>
                 <div className="form-group-v5"><label>Rating</label>
-                  <select value={reviewFormData.rating} onChange={(e) => setReviewFormData({...reviewFormData, rating: parseInt(e.target.value)})}>
-                    {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} Stars</option>)}
+                  <select value={reviewFormData.rating} onChange={(e) => setReviewFormData({ ...reviewFormData, rating: parseInt(e.target.value) })}>
+                    {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} Stars</option>)}
                   </select>
                 </div>
-                <div className="form-group-v5"><label>Title</label><input type="text" value={reviewFormData.title} onChange={(e) => setReviewFormData({...reviewFormData, title: e.target.value})} /></div>
+                <div className="form-group-v5"><label>Title</label><input type="text" value={reviewFormData.title} onChange={(e) => setReviewFormData({ ...reviewFormData, title: e.target.value })} /></div>
                 <div className="form-group-v5"><label>Review</label>
-                  <textarea 
-                    value={reviewFormData.review} 
-                    onChange={(e) => setReviewFormData({...reviewFormData, review: e.target.value})}
-                    style={{width:'100%',background:'var(--bg-main)',border:'1px solid rgba(255,255,255,0.08)',padding:'0.8rem',borderRadius:'12px',color:'var(--text-white)',minHeight:'100px'}}
+                  <textarea
+                    value={reviewFormData.review}
+                    onChange={(e) => setReviewFormData({ ...reviewFormData, review: e.target.value })}
+                    style={{ width: '100%', background: 'var(--bg-main)', border: '1px solid rgba(255,255,255,0.08)', padding: '0.8rem', borderRadius: '12px', color: 'var(--text-white)', minHeight: '100px' }}
                   />
                 </div>
                 <div className="checkbox-group-v5">
-                  <input type="checkbox" id="is-approved" checked={reviewFormData.approved} onChange={(e) => setReviewFormData({...reviewFormData, approved: e.target.checked})} />
+                  <input type="checkbox" id="is-approved" checked={reviewFormData.approved} onChange={(e) => setReviewFormData({ ...reviewFormData, approved: e.target.checked })} />
                   <label htmlFor="is-approved">Approved</label>
                 </div>
                 <div className="modal-footer-v5">
@@ -1187,11 +1191,11 @@ function AdminPanel() {
           <div className="split-items">
             <div className="split-item">
               <div className="split-info"><span>Rentals</span><span>{stats.rentals}</span></div>
-              <div className="split-bar"><div className="fill" style={{width: `${(stats.rentals/stats.cars)*100}%`}}></div></div>
+              <div className="split-bar"><div className="fill" style={{ width: `${(stats.rentals / stats.cars) * 100}%` }}></div></div>
             </div>
             <div className="split-item">
               <div className="split-info"><span>Sales</span><span>{stats.sales}</span></div>
-              <div className="split-bar"><div className="fill" style={{width: `${(stats.sales/stats.cars)*100}%`, backgroundColor: '#ff6b6b'}}></div></div>
+              <div className="split-bar"><div className="fill" style={{ width: `${(stats.sales / stats.cars) * 100}%`, backgroundColor: '#ff6b6b' }}></div></div>
             </div>
           </div>
           <div className="quick-actions-v5">
@@ -1209,7 +1213,7 @@ function AdminPanel() {
   );
 
   const renderUsers = () => {
-    const filteredUsers = usersList.filter(u => 
+    const filteredUsers = usersList.filter(u =>
       (u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (filterRole === 'all' || u.role === filterRole)
     );
@@ -1218,9 +1222,9 @@ function AdminPanel() {
       <div className="management-view">
         <div className="controls-row">
           <div className="search-box-v5">
-            <input 
-              type="text" 
-              placeholder="Search users..." 
+            <input
+              type="text"
+              placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -1264,12 +1268,25 @@ function AdminPanel() {
                   <td><span className={`role-badge ${u.role}`}>{u.role}</span></td>
                   <td><span className={`status-badge ${u.status || 'active'}`}>{u.status || 'Active'}</span></td>
                   <td>
-                    <button 
+                    <button
                       className={`verify-toggle ${u.isVerified ? 'verified' : 'pending'}`}
                       onClick={() => handleUserAction(u.id, 'toggleVerify', !u.isVerified)}
                     >
                       {u.isVerified ? <><FaCheck /> Verified</> : 'Unverified'}
                     </button>
+                    {u.verificationDocs && (
+                      <button
+                        className="action-icn info"
+                        style={{ marginLeft: '8px', color: 'var(--primary)', padding: '5px' }}
+                        onClick={() => setActiveDocs({
+                          title: `Verification Docs: ${u.fullName || u.email}`,
+                          docs: u.verificationDocs
+                        })}
+                        title="View Identification Documents"
+                      >
+                        <FaFileAlt />
+                      </button>
+                    )}
                   </td>
                   <td>
                     <div className="table-actions">
@@ -1294,27 +1311,27 @@ function AdminPanel() {
               <form onSubmit={handleSaveUser} className="modal-form-v5">
                 <div className="form-group-v5">
                   <label>Full Name</label>
-                  <input 
-                    type="text" 
-                    required 
+                  <input
+                    type="text"
+                    required
                     value={userFormData.fullName}
-                    onChange={(e) => setUserFormData({...userFormData, fullName: e.target.value})}
+                    onChange={(e) => setUserFormData({ ...userFormData, fullName: e.target.value })}
                   />
                 </div>
                 <div className="form-group-v5">
                   <label>Email Address</label>
-                  <input 
-                    type="email" 
-                    required 
+                  <input
+                    type="email"
+                    required
                     readOnly={!!editingUser}
                     value={userFormData.email}
-                    onChange={(e) => setUserFormData({...userFormData, email: e.target.value})}
+                    onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
                   />
                 </div>
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>Role</label>
-                    <select value={userFormData.role} onChange={(e) => setUserFormData({...userFormData, role: e.target.value})}>
+                    <select value={userFormData.role} onChange={(e) => setUserFormData({ ...userFormData, role: e.target.value })}>
                       <option value="user">Standard User</option>
                       <option value="buyer">Buyer</option>
                       <option value="seller">Seller</option>
@@ -1324,7 +1341,7 @@ function AdminPanel() {
                   </div>
                   <div className="form-group-v5">
                     <label>Status</label>
-                    <select value={userFormData.status} onChange={(e) => setUserFormData({...userFormData, status: e.target.value})}>
+                    <select value={userFormData.status} onChange={(e) => setUserFormData({ ...userFormData, status: e.target.value })}>
                       <option value="active">Active</option>
                       <option value="suspended">Suspended</option>
                       <option value="blocked">Blocked</option>
@@ -1332,11 +1349,11 @@ function AdminPanel() {
                   </div>
                 </div>
                 <div className="checkbox-group-v5">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     id="is-verified"
                     checked={userFormData.isVerified}
-                    onChange={(e) => setUserFormData({...userFormData, isVerified: e.target.checked})}
+                    onChange={(e) => setUserFormData({ ...userFormData, isVerified: e.target.checked })}
                   />
                   <label htmlFor="is-verified">Mark as Verified User</label>
                 </div>
@@ -1390,9 +1407,9 @@ function AdminPanel() {
     try {
       setSeedStatus('🔍 Looking up specs...');
       const results = await searchCarsAPI({
-        make:  carFormData.brand || carFormData.make,
+        make: carFormData.brand || carFormData.make,
         model: carFormData.model,
-        year:  carFormData.year || undefined,
+        year: carFormData.year || undefined,
         limit: 1
       });
       if (results.length === 0) {
@@ -1461,9 +1478,9 @@ function AdminPanel() {
         )}
         <div className="controls-row">
           <div className="search-box-v5">
-            <input 
-              type="text" 
-              placeholder="Search vehicles..." 
+            <input
+              type="text"
+              placeholder="Search vehicles..."
               value={carSearchQuery}
               onChange={(e) => setCarSearchQuery(e.target.value)}
             />
@@ -1474,17 +1491,17 @@ function AdminPanel() {
               <option value="sale">For Sale</option>
               <option value="rent">For Rent</option>
             </select>
-            <button 
-              className="add-btn-v5" 
-              onClick={handleSeedDatabase} 
+            <button
+              className="add-btn-v5"
+              onClick={handleSeedDatabase}
               disabled={isSeeding}
               style={{ background: 'linear-gradient(135deg, #10b981, #059669)', marginRight: '0.5rem' }}
             >
               {isSeeding ? '⏳ Working...' : '🚀 Seed 100 Cars'}
             </button>
-            <button 
-              className="add-btn-v5" 
-              onClick={handleFixImages} 
+            <button
+              className="add-btn-v5"
+              onClick={handleFixImages}
               disabled={isSeeding}
               style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', marginRight: '0.5rem' }}
             >
@@ -1520,7 +1537,7 @@ function AdminPanel() {
                   </td>
                   <td><span className={`type-badge ${c.purpose}`}>{c.purpose}</span></td>
                   <td>
-                    <select 
+                    <select
                       className={`status-select-v5 ${c.status}`}
                       value={c.status}
                       onChange={(e) => handleCarAction(c.id, 'status', e.target.value)}
@@ -1533,7 +1550,7 @@ function AdminPanel() {
                     </select>
                   </td>
                   <td>
-                    <button 
+                    <button
                       className={`featured-toggle ${c.isFeatured ? 'active' : ''}`}
                       onClick={() => handleCarAction(c.id, 'toggleFeatured', !c.isFeatured)}
                     >
@@ -1543,6 +1560,19 @@ function AdminPanel() {
                   <td><p className="price-v5">₹{parseInt(c.price || c.dailyRate || 0).toLocaleString()}{c.purpose === 'rent' ? '/day' : ''}</p></td>
                   <td>
                     <div className="table-actions">
+                      {c.publicDocs && Object.keys(c.publicDocs).length > 0 && (
+                        <button
+                          className="action-icn info"
+                          onClick={() => setActiveDocs({
+                            title: `Vehicle Documents: ${c.brand || c.make} ${c.model}`,
+                            docs: c.publicDocs
+                          })}
+                          title="View Vehicle Documents (RC, Insurance, etc.)"
+                          style={{ color: '#60a5fa' }}
+                        >
+                          <FaFileAlt />
+                        </button>
+                      )}
                       <button className="action-icn edit" onClick={() => openCarModal(c)}><FaEdit /></button>
                       <button className="action-icn delete" onClick={() => handleCarAction(c.id, 'delete')}><FaTrash /></button>
                     </div>
@@ -1573,21 +1603,21 @@ function AdminPanel() {
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>Brand / Make</label>
-                    <input type="text" required placeholder="e.g. Maruti" value={carFormData.brand || carFormData.make} onChange={(e) => setCarFormData({...carFormData, brand: e.target.value, make: e.target.value})} />
+                    <input type="text" required placeholder="e.g. Maruti" value={carFormData.brand || carFormData.make} onChange={(e) => setCarFormData({ ...carFormData, brand: e.target.value, make: e.target.value })} />
                   </div>
                   <div className="form-group-v5">
                     <label>Model</label>
-                    <input type="text" required placeholder="e.g. Swift" value={carFormData.model} onChange={(e) => setCarFormData({...carFormData, model: e.target.value})} />
+                    <input type="text" required placeholder="e.g. Swift" value={carFormData.model} onChange={(e) => setCarFormData({ ...carFormData, model: e.target.value })} />
                   </div>
                 </div>
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>Year</label>
-                    <input type="number" required placeholder="2022" value={carFormData.year} onChange={(e) => setCarFormData({...carFormData, year: e.target.value})} />
+                    <input type="number" required placeholder="2022" value={carFormData.year} onChange={(e) => setCarFormData({ ...carFormData, year: e.target.value })} />
                   </div>
                   <div className="form-group-v5">
                     <label>Body Type</label>
-                    <select value={carFormData.type} onChange={(e) => setCarFormData({...carFormData, type: e.target.value})}>
+                    <select value={carFormData.type} onChange={(e) => setCarFormData({ ...carFormData, type: e.target.value })}>
                       <option value="SUV">SUV</option><option value="Sedan">Sedan</option>
                       <option value="Hatchback">Hatchback</option><option value="MPV">MPV</option>
                       <option value="Pickup">Pickup</option><option value="Coupe">Coupe</option>
@@ -1597,36 +1627,36 @@ function AdminPanel() {
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>Fuel Type</label>
-                    <select value={carFormData.fuelType} onChange={(e) => setCarFormData({...carFormData, fuelType: e.target.value})}>
+                    <select value={carFormData.fuelType} onChange={(e) => setCarFormData({ ...carFormData, fuelType: e.target.value })}>
                       <option>Petrol</option><option>Diesel</option>
                       <option>CNG</option><option>Electric</option><option>Hybrid</option>
                     </select>
                   </div>
                   <div className="form-group-v5">
                     <label>Transmission</label>
-                    <select value={carFormData.transmission} onChange={(e) => setCarFormData({...carFormData, transmission: e.target.value})}>
+                    <select value={carFormData.transmission} onChange={(e) => setCarFormData({ ...carFormData, transmission: e.target.value })}>
                       <option>Manual</option><option>Automatic</option>
                     </select>
                   </div>
                 </div>
                 <div className="form-row-v5">
                   <div className="form-group-v5">
-                    <label>Sale Price (₹) <span style={{fontSize:'0.75rem',color:'var(--text-muted)'}}>— leave 0 for rental</span></label>
-                    <input type="number" value={carFormData.price} onChange={(e) => setCarFormData({...carFormData, price: e.target.value})} />
+                    <label>Sale Price (₹) <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>— leave 0 for rental</span></label>
+                    <input type="number" value={carFormData.price} onChange={(e) => setCarFormData({ ...carFormData, price: e.target.value })} />
                   </div>
                   <div className="form-group-v5">
-                    <label>Daily Rate (₹/day) <span style={{fontSize:'0.75rem',color:'var(--text-muted)'}}>— leave 0 for sale</span></label>
-                    <input type="number" value={carFormData.dailyRate} onChange={(e) => setCarFormData({...carFormData, dailyRate: e.target.value})} />
+                    <label>Daily Rate (₹/day) <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>— leave 0 for sale</span></label>
+                    <input type="number" value={carFormData.dailyRate} onChange={(e) => setCarFormData({ ...carFormData, dailyRate: e.target.value })} />
                   </div>
                 </div>
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>KM Driven</label>
-                    <input type="number" placeholder="45000" value={carFormData.kmDriven} onChange={(e) => setCarFormData({...carFormData, kmDriven: e.target.value})} />
+                    <input type="number" placeholder="45000" value={carFormData.kmDriven} onChange={(e) => setCarFormData({ ...carFormData, kmDriven: e.target.value })} />
                   </div>
                   <div className="form-group-v5">
                     <label>Condition</label>
-                    <select value={carFormData.condition} onChange={(e) => setCarFormData({...carFormData, condition: e.target.value})}>
+                    <select value={carFormData.condition} onChange={(e) => setCarFormData({ ...carFormData, condition: e.target.value })}>
                       <option>Excellent</option><option>Good</option><option>Fair</option>
                     </select>
                   </div>
@@ -1634,28 +1664,28 @@ function AdminPanel() {
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>Location / City</label>
-                    <input type="text" placeholder="Mumbai" value={carFormData.location} onChange={(e) => setCarFormData({...carFormData, location: e.target.value})} />
+                    <input type="text" placeholder="Mumbai" value={carFormData.location} onChange={(e) => setCarFormData({ ...carFormData, location: e.target.value })} />
                   </div>
                   <div className="form-group-v5">
                     <label>Image URL</label>
-                    <input type="url" placeholder="https://..." value={carFormData.imageUrl} onChange={(e) => setCarFormData({...carFormData, imageUrl: e.target.value, images: e.target.value ? [e.target.value] : []})} />
+                    <input type="url" placeholder="https://..." value={carFormData.imageUrl} onChange={(e) => setCarFormData({ ...carFormData, imageUrl: e.target.value, images: e.target.value ? [e.target.value] : [] })} />
                   </div>
                 </div>
                 <div className="form-group-v5">
                   <label>Description</label>
-                  <textarea rows="3" placeholder="Brief vehicle description..." value={carFormData.description} onChange={(e) => setCarFormData({...carFormData, description: e.target.value})} style={{width:'100%',background:'var(--bg-main)',border:'1px solid rgba(255,255,255,0.08)',padding:'0.8rem',borderRadius:'12px',color:'var(--text-white)',resize:'vertical'}} />
+                  <textarea rows="3" placeholder="Brief vehicle description..." value={carFormData.description} onChange={(e) => setCarFormData({ ...carFormData, description: e.target.value })} style={{ width: '100%', background: 'var(--bg-main)', border: '1px solid rgba(255,255,255,0.08)', padding: '0.8rem', borderRadius: '12px', color: 'var(--text-white)', resize: 'vertical' }} />
                 </div>
                 <div className="form-row-v5">
                   <div className="form-group-v5">
                     <label>Category</label>
-                    <select value={carFormData.purpose} onChange={(e) => setCarFormData({...carFormData, purpose: e.target.value})}>
+                    <select value={carFormData.purpose} onChange={(e) => setCarFormData({ ...carFormData, purpose: e.target.value })}>
                       <option value="sale">For Sale</option>
                       <option value="rent">For Rent</option>
                     </select>
                   </div>
                   <div className="form-group-v5">
                     <label>Listing Status</label>
-                    <select value={carFormData.status} onChange={(e) => setCarFormData({...carFormData, status: e.target.value})}>
+                    <select value={carFormData.status} onChange={(e) => setCarFormData({ ...carFormData, status: e.target.value })}>
                       <option value="pending">Pending</option>
                       <option value="active">Approved</option>
                       <option value="rejected">Rejected</option>
@@ -1663,7 +1693,7 @@ function AdminPanel() {
                   </div>
                 </div>
                 <div className="checkbox-group-v5">
-                  <input type="checkbox" id="is-featured" checked={carFormData.isFeatured} onChange={(e) => setCarFormData({...carFormData, isFeatured: e.target.checked})} />
+                  <input type="checkbox" id="is-featured" checked={carFormData.isFeatured} onChange={(e) => setCarFormData({ ...carFormData, isFeatured: e.target.checked })} />
                   <label htmlFor="is-featured">Feature this vehicle on homepage</label>
                 </div>
                 <div className="modal-footer-v5">
@@ -1722,7 +1752,7 @@ function AdminPanel() {
               <FaCog /> <span>Settings</span>
             </div>
           </nav>
-          
+
           <div className="admin-profile-mini">
             <img src="https://ui-avatars.com/api/?name=Admin&background=c21807&color=fff" alt="Admin" />
             <div className="profile-info">
@@ -1757,9 +1787,59 @@ function AdminPanel() {
             {view === 'resets' && renderResetRequests()}
             {view === 'payments' && renderPayments()}
             {view === 'settings' && renderSettings()}
+
+            {/* ── Document Viewer Modal ── */}
+            {activeDocs && (
+              <div className="modal-overlay-v5" style={{ zIndex: 2000 }}>
+                <div className="modal-v5" style={{ maxWidth: '600px' }}>
+                  <div className="modal-header-v5">
+                    <h2>{activeDocs.title}</h2>
+                    <button className="close-btn" onClick={() => setActiveDocs(null)}>×</button>
+                  </div>
+                  <div className="modal-body-v5" style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {Object.entries(activeDocs.docs).map(([key, url]) => {
+                        if (key === 'status' || key === 'submittedAt') return null;
+                        return (
+                          <div key={key} style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            padding: '1rem',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                              <FaFileAlt style={{ color: 'var(--primary)', fontSize: '1.2rem' }} />
+                              <span style={{ textTransform: 'uppercase', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                {key.replace('Url', '')}
+                              </span>
+                            </div>
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-primary"
+                              style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', textDecoration: 'none' }}
+                            >
+                              View / Download
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="modal-footer-v5">
+                    <button className="save-btn-v5" onClick={() => setActiveDocs(null)}>Close</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {view === 'analytics' && (
               <Suspense fallback={
-                <div className="loading-state" style={{height: '100%', background: 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+                <div className="loading-state" style={{ height: '100%', background: 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <div className="spinner"></div><p>Loading Analytics...</p>
                 </div>}>
                 <AnalyticsDashboard users={usersList} cars={fleetList} rentals={bookingsList} orders={transactionsList} />
