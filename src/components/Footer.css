@@ -25,9 +25,9 @@
 }
 
 .footer-logo-img {
-  height: 60px; /* Slightly larger for visibility */
+  height: 72px; /* Increased height for better visibility of the "RIDEMART" text */
   width: auto;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
 }
 
 .footer-description {

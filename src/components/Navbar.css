@@ -45,9 +45,10 @@
 }
 
 .logo-img {
-  height: 44px; /* Slightly larger since it is the sole logo element */
+  height: 52px; /* Slightly larger for clarity on the new design */
   width: auto;
-  border-radius: var(--radius-sm);
+  border-radius: 0; /* New rectangular branding */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .nav-menu {
