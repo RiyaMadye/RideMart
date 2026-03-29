@@ -288,3 +288,31 @@
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
+
+.no-results {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: var(--bg-surface);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  margin-top: 2rem;
+}
+
+.no-results-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.no-results h3 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-white);
+}
+
+.no-results p {
+  color: var(--text-muted);
+  max-width: 500px;
+  margin: 0 auto;
+}

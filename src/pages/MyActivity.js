@@ -147,10 +147,10 @@ function MyActivity() {
         <div className="activities-container">
           {filteredActivities.length === 0 ? (
             <div className="empty-state">
-              <FaInbox className="empty-icon" />
-              <h3>No activity recorded yet</h3>
-              <p>Start exploring the marketplace to see data here.</p>
-              <button onClick={() => navigate('/buy')} className="btn btn-primary" style={{marginTop: 'var(--space-lg)'}}>Browse Marketplace</button>
+              <FaInbox className="empty-state-icon" />
+              <h3>Your dashboard is quiet</h3>
+              <p>You haven't recorded any listings, purchases, or rentals yet. Start exploring the marketplace to see your activity here.</p>
+              <button onClick={() => navigate('/buy')} className="btn btn-primary browse-btn">Explore Marketplace</button>
             </div>
           ) : (
             <div className="activities-list">

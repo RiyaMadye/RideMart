@@ -413,12 +413,12 @@ function BuyCars() {
         </div>
 
         {filteredCars.length === 0 ? (
-          <div className="no-results">
-            <FaFilter style={{ fontSize: '3rem', color: 'var(--primary-light)', marginBottom: '1rem' }} />
-            <h3>No matches found</h3>
-            <p>Try adjusting your filters or search term</p>
-            <button className="btn btn-primary" onClick={resetFilters} style={{ marginTop: '1.5rem' }}>
-              Clear All Filters
+          <div className="no-results animate-fade-in">
+            <div className="no-results-icon">🔍</div>
+            <h3>No matching vehicles found</h3>
+            <p>We couldn't find any vehicles matching your current filters. Try adjusting your search criteria or reset all filters to browse our full inventory.</p>
+            <button className="btn btn-primary" onClick={resetFilters} style={{ margin: '2rem auto 0', display: 'block' }}>
+              <FaRedo /> Reset All Filters
             </button>
           </div>
         ) : (

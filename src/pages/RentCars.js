@@ -243,11 +243,12 @@ function RentCars() {
         </section>
 
         {filteredCars.length === 0 ? (
-          <div className="no-results">
-            <h3>No rentals found</h3>
-            <p>Try adjusting your filters or check back later for new additions</p>
-            <button className="btn btn-primary" onClick={resetFilters} style={{ marginTop: '1rem' }}>
-              Clear Filters
+          <div className="no-results animate-fade-in">
+            <div className="no-results-icon">🔍</div>
+            <h3>No matching rentals found</h3>
+            <p>We couldn't find any vehicles matching your current filters. Try adjusting your search criteria or reset all filters to browse our full catalog.</p>
+            <button className="btn btn-primary" onClick={resetFilters} style={{ margin: '2rem auto 0', display: 'block' }}>
+              <FaRedo /> Reset All Filters
             </button>
           </div>
         ) : (
