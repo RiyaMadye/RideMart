@@ -164,6 +164,24 @@ function CarDetails() {
       prefill: { name: user.displayName || '', email: user.email },
       theme: { color: "#c21807" }
     };
+    
+    // Check if the amount is likely to exceed Razorpay test mode limits
+    // Typically, Test Mode is limited to 1,000,000 INR (10 Lakhs)
+    const isHighAmount = amount > 1000000;
+    
+    if (isHighAmount) {
+      const confirmProceed = window.confirm(
+        `⚠️ HIGH AMOUNT DETECTED (₹${amount.toLocaleString()})\n\n` +
+        `Razorpay TEST MODE typically has a limit of ₹10,00,000 per transaction.\n` +
+        `This payment may fail with "Amount exceeds maximum amount allowed".\n\n` +
+        `For testing, we recommend changing the car price to a smaller amount (e.g., ₹500) in the Admin Panel.\n\n` +
+        `Do you still want to try the payment?`
+      );
+      if (!confirmProceed) {
+        setIsProcessing(false);
+        return;
+      }
+    }
 
     try {
       displayRazorpay(options);
@@ -216,6 +234,16 @@ function CarDetails() {
                 <span className="price">₹{car.price?.toLocaleString()}</span>
                 {car.dailyRate && <span className="price-period" style={{fontSize: '1rem', color: 'var(--text-muted)'}}>/day</span>}
               </div>
+
+              {car.price > 1000000 && (
+                <div className="test-mode-warning">
+                  <span className="warning-icon">⚠️</span>
+                  <div className="warning-content">
+                    <strong>High Amount Notice</strong>
+                    <p>In <strong>Test Mode</strong>, payments over ₹10 Lakhs may fail due to gateway limits. For testing, please set a lower price in Admin.</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="key-specs">

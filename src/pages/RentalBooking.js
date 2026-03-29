@@ -153,7 +153,7 @@ export default function RentalBooking() {
 
   // ─── Computed values
   const days         = daysBetween(pickupDate, returnDate);
-  const baseTotal    = (car?.dailyRate || car?.price || 0) * days;
+  const baseTotal    = (car?.dailyRate || 0) * days;
   const addonTotal   = Object.entries(activeAddons)
     .filter(([, on]) => on)
     .reduce((sum, [id]) => {
@@ -161,6 +161,7 @@ export default function RentalBooking() {
       return sum + (a ? a.pricePerDay * days : 0);
     }, 0);
   const grandTotal   = baseTotal + addonTotal;
+  const isRateInvalid = !car?.dailyRate || car?.dailyRate <= 0;
 
   // ─── Step 1 validation
   const step1Valid = pickupDate && returnDate && returnDate > pickupDate && ageConfirmed;
@@ -180,6 +181,10 @@ export default function RentalBooking() {
       setError('Please read the agreement, check the box, and sign your name.');
       return;
     }
+    if (step === 3 && isRateInvalid) {
+      setError('Error: This vehicle does not have a valid daily rental rate set. Please contact support.');
+      return;
+    }
     setStep(s => s + 1);
   };
 
@@ -189,6 +194,11 @@ export default function RentalBooking() {
     const user = auth.currentUser;
     if (!user) { navigate('/login'); return; }
 
+    if (isRateInvalid) {
+      setError('Error: Invalid price configuration. Daily rate must be set in the database.');
+      setIsProcessing(false);
+      return;
+    }
     setIsProcessing(true);
     setError('');
 
@@ -578,9 +588,9 @@ export default function RentalBooking() {
                 </div>
 
                 <button
-                  className="rb-pay-btn"
+                  className={`rb-pay-btn ${isRateInvalid ? 'rb-btn--disabled' : ''}`}
                   onClick={handlePayment}
-                  disabled={isProcessing}
+                  disabled={isProcessing || isRateInvalid}
                 >
                   {isProcessing ? (
                     <><span className="rb-btn-spinner" /> Processing...</>
