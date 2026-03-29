@@ -134,6 +134,72 @@ function AdminPanel() {
   const [docModalOpen, setDocModalOpen] = useState(false);
   const [activeDocs, setActiveDocs] = useState(null); // { title: '', docs: { name: url } }
 
+  // Helper to find a user's name by ID or Email
+  const getUserName = (userId, userEmail) => {
+    const user = usersList.find(u =>
+      (userId && u.id === userId) ||
+      (userEmail && u.email?.toLowerCase() === userEmail.toLowerCase())
+    );
+    if (!user) return userEmail || (userId ? `ID: ${userId.slice(0, 8)}` : 'Unknown');
+    return user.fullName || user.displayName || user.email;
+  };
+
+  const handleSyncNames = async () => {
+    if (!window.confirm("This will retroactively update 'payments', 'bookings', and 'orders' documents with current user names from the Users database. Proceed?")) return;
+    setIsSeeding(true);
+    setSeedStatus("🔄 Syncing names across database...");
+    let updatedCount = 0;
+
+    try {
+      const collectionsToSync = ['payments', 'bookings', 'orders'];
+
+      for (const colName of collectionsToSync) {
+        const snapshot = await getDocs(collection(db, colName));
+        const batch = writeBatch(db);
+        let batchCount = 0;
+
+        snapshot.docs.forEach(docSnap => {
+          const data = docSnap.data();
+          const userId = data.userId;
+          const userEmail = data.userEmail || data.customerEmail || data.renterEmail || data.buyerInfo?.email;
+
+          const user = usersList.find(u =>
+            (userId && u.id === userId) ||
+            (userEmail && u.email?.toLowerCase() === userEmail.toLowerCase())
+          );
+
+          if (user) {
+            const name = user.fullName || user.displayName;
+            if (name && (data.userName !== name || data.fullName !== name)) {
+              const updateData = {};
+              if (colName === 'orders') {
+                updateData.userName = name;
+                updateData.buyerInfo = { ...data.buyerInfo, name: name };
+              } else {
+                updateData.userName = name;
+              }
+              batch.update(doc(db, colName, docSnap.id), updateData);
+              batchCount++;
+              updatedCount++;
+            }
+          }
+        });
+
+        if (batchCount > 0) {
+          await batch.commit();
+        }
+      }
+
+      setSeedStatus(`✅ Successfully synced names in ${updatedCount} records.`);
+      setTimeout(() => setSeedStatus(''), 5000);
+    } catch (err) {
+      console.error("Sync Error:", err);
+      setSeedStatus(`❌ Sync Error: ${err.message}`);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
   useEffect(() => {
     // Fetch Settings (one-time fetch is fine for this)
     const fetchSettings = async () => {
@@ -557,7 +623,14 @@ function AdminPanel() {
             <tbody>
               {filteredBookings.map(b => (
                 <tr key={b.id}>
-                  <td><div className="user-cell"><div><p className="u-name">{b.renterEmail}</p><p className="u-email">ID: {b.id.slice(0, 8)}</p></div></div></td>
+                  <td>
+                    <div className="user-cell">
+                      <div>
+                        <p className="u-name">{getUserName(b.userId, b.renterEmail)}</p>
+                        <p className="u-email">{b.renterEmail}</p>
+                      </div>
+                    </div>
+                  </td>
                   <td>{b.carMake} {b.carModel}</td>
                   <td>{b.startDate} to {b.endDate}</td>
                   <td>₹{parseInt(b.totalPrice || 0).toLocaleString()}</td>
@@ -630,7 +703,10 @@ function AdminPanel() {
               {filteredTrans.map(t => (
                 <tr key={t.id}>
                   <td className="u-email">{t.id.slice(0, 10)}...</td>
-                  <td>{t.customerEmail}</td>
+                  <td>
+                    <p className="u-name" style={{ fontWeight: 600 }}>{getUserName(t.userId, t.customerEmail)}</p>
+                    <p className="u-email">{t.customerEmail}</p>
+                  </td>
                   <td>{t.carDetails || 'N/A'}</td>
                   <td>₹{parseInt(t.amount || 0).toLocaleString()}</td>
                   <td>
@@ -835,7 +911,10 @@ function AdminPanel() {
                 <tr key={p.id}>
                   <td className="u-email" style={{ color: 'var(--primary-light)' }}>{p.paymentId || p.razorpayPaymentId}</td>
                   <td className="u-email">{p.orderId || p.bookingId}</td>
-                  <td>{p.userEmail || p.userId?.slice(0, 8)}</td>
+                  <td>
+                    <p className="u-name" style={{ fontWeight: 600 }}>{getUserName(p.userId, p.userEmail)}</p>
+                    <p className="u-email" style={{ fontSize: '0.75rem', opacity: 0.7 }}>{p.userEmail || `ID: ${p.userId?.slice(0, 8)}`}</p>
+                  </td>
                   <td><p className="price-v5">₹{parseInt(p.amount || 0).toLocaleString()}</p></td>
                   <td><span className={`status-badge ${p.paymentStatus === 'success' ? 'active' : 'pending'}`}>{p.paymentStatus}</span></td>
                   <td>{p.timestamp?.toDate ? p.timestamp.toDate().toLocaleString() : 'Just now'}</td>
@@ -855,7 +934,7 @@ function AdminPanel() {
     <div className="management-view">
       <div className="controls-row">
         <div className="filters-group-v5">
-          {['general', 'financial', 'security'].map(tab => (
+          {['general', 'financial', 'security', 'maintenance'].map(tab => (
             <button
               key={tab}
               className={`tab-btn`}
@@ -918,6 +997,26 @@ function AdminPanel() {
             <h3 style={{ margin: '2.5rem 0 1rem', color: 'var(--text-white)' }}>Admin Management</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Manage users with administrative privileges in the Users tab.</p>
             <button className="add-btn-v5" onClick={() => setView('users')} style={{ display: 'inline-flex', width: 'auto' }}>Manage Admins</button>
+          </div>
+        )}
+
+        {activeSettingsTab === 'maintenance' && (
+          <div className="settings-section">
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-white)' }}>Database Maintenance</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Repair data consistency and sync user names across collections.</p>
+            
+            <div className="alert-v5 info" style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', color: '#93c5fd', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(59,130,246,0.2)' }}>
+              <strong>Sync User Names:</strong> This utility will scan your Payments, Bookings, and Orders. For each record, it will find the corresponding user and update the record with their current Full Name.
+            </div>
+
+            <button 
+              className="add-btn-v5" 
+              onClick={handleSyncNames}
+              disabled={isSeeding}
+              style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', width: 'auto' }}
+            >
+              {isSeeding ? '⏳ Processing...' : '🔄 Sync Missing User Names'}
+            </button>
           </div>
         )}
       </div>

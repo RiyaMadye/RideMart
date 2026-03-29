@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc, query, where, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, getDoc, query, where, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -91,12 +91,24 @@ function Cart() {
       handler: async (response) => {
         // This function is called on successful payment
         try {
+          // Fetch the full name from the 'users' collection
+          let fullName = currentUser.displayName || "";
+          try {
+            const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+            if (userDoc.exists()) {
+              fullName = userDoc.data().fullName || userDoc.data().displayName || fullName;
+            }
+          } catch (err) {
+            console.warn("Could not fetch full user name from Firestore, using Auth display name instead.");
+          }
+
           // 1. Create a new order document in Firestore
           const orderRef = await addDoc(collection(db, 'orders'), {
             userId: currentUser.uid,
+            userName: fullName,
             buyerInfo: {
               email: currentUser.email,
-              name: currentUser.displayName,
+              name: fullName,
             },
             items: cartItems,
             totalAmount: totalAmount,
@@ -111,6 +123,7 @@ function Cart() {
             // 2. Log payment in Firestore
             await addDoc(collection(db, 'payments'), {
               userId: currentUser.uid,
+              userName: fullName,
               orderId: orderRef.id,
               paymentId: response.razorpay_payment_id,
               amount: totalAmount,

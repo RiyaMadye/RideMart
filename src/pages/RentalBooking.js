@@ -237,6 +237,17 @@ export default function RentalBooking() {
   const handleBookingAfterPayment = async (response) => {
     const user = auth.currentUser;
     try {
+      // Fetch the full name from the 'users' collection
+      let fullName = user.displayName || "";
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          fullName = userDoc.data().fullName || userDoc.data().displayName || fullName;
+        }
+      } catch (err) {
+        console.warn("Could not fetch full user name from Firestore, using Auth display name instead.");
+      }
+
       const enabledAddons = Object.entries(activeAddons)
         .filter(([, on]) => on)
         .map(([id]) => ADDONS.find(a => a.id === id)?.label);
@@ -249,6 +260,7 @@ export default function RentalBooking() {
         carImage:         car.imageUrl || '',
         carType:          car.type,
         userId:           user.uid,
+        userName:         fullName,
         userEmail:        user.email,
         driverName,
         driverPhone,
@@ -277,6 +289,7 @@ export default function RentalBooking() {
 
         await addDoc(collection(db, 'payments'), {
           userId:        user.uid,
+          userName:      fullName,
           bookingId:     bookingRef.id,
           carId:         car.id,
           paymentId:     response.razorpay_payment_id,
