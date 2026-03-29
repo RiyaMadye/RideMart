@@ -137,13 +137,15 @@ function ListCar() {
         })
       );
 
-      const rcUrl = await uploadFile(publicDocs.rc, `cars/${carId}/rc.pdf`);
-      const insuranceUrl = await uploadFile(publicDocs.insurance, `cars/${carId}/insurance.pdf`);
-      const pucUrl = await uploadFile(publicDocs.puc, `cars/${carId}/puc.pdf`);
+      const getExt = (file) => file ? file.name.split('.').pop() : '';
 
-      const aadharUrl = await uploadFile(adminDocs.aadhar, `user-verification/${currentUser.uid}/aadhar.pdf`);
-      const panUrl = await uploadFile(adminDocs.pan, `user-verification/${currentUser.uid}/pan.pdf`);
-      const licenseUrl = await uploadFile(adminDocs.license, `user-verification/${currentUser.uid}/license.pdf`);
+      const rcUrl = publicDocs.rc ? await uploadFile(publicDocs.rc, `cars/${carId}/rc.${getExt(publicDocs.rc)}`) : null;
+      const insuranceUrl = publicDocs.insurance ? await uploadFile(publicDocs.insurance, `cars/${carId}/insurance.${getExt(publicDocs.insurance)}`) : null;
+      const pucUrl = publicDocs.puc ? await uploadFile(publicDocs.puc, `cars/${carId}/puc.${getExt(publicDocs.puc)}`) : null;
+
+      const aadharUrl = await uploadFile(adminDocs.aadhar, `user-verification/${currentUser.uid}/aadhar.${getExt(adminDocs.aadhar)}`);
+      const panUrl = await uploadFile(adminDocs.pan, `user-verification/${currentUser.uid}/pan.${getExt(adminDocs.pan)}`);
+      const licenseUrl = await uploadFile(adminDocs.license, `user-verification/${currentUser.uid}/license.${getExt(adminDocs.license)}`);
 
       // 3. Prepare data for Firestore
       const carData = {
