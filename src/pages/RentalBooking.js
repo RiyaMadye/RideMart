@@ -210,7 +210,7 @@ export default function RentalBooking() {
         currency: 'INR',
         name: 'RideMart Rentals',
         description: `${car.brand} ${car.model} — ${days} day${days > 1 ? 's' : ''}`,
-        image: car.imageUrl || '/logo-brand.jpg',
+        image: car.imageUrl || '/logo-brand.png',
         prefill: {
           name: driverName || user.displayName || '',
           email: user.email,
@@ -513,7 +513,7 @@ export default function RentalBooking() {
 
                 <div className="rb-contract-document">
                   <div className="rb-contract-header">
-                    <img src="/logo-brand.jpg" alt="RideMart" className="rb-contract-logo" onError={e => e.target.style.display='none'} />
+                    <img src="/logo-brand.png" alt="RideMart" className="rb-contract-logo" onError={e => e.target.style.display='none'} />
                     <div className="rb-contract-meta">
                       <h3>RENTAL AGREEMENT</h3>
                       <p>Ref: RM-CNT-${Math.random().toString(36).substr(2, 6).toUpperCase()}</p>

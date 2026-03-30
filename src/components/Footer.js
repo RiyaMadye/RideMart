@@ -13,7 +13,7 @@ function Footer() {
           {/* Brand Column */}
           <div className="footer-column brand-column">
             <Link to="/" className="footer-logo">
-              <img src="/logo-brand.jpg" alt="RideMart Logo" className="footer-logo-img" />
+              <img src="/logo-brand.png" alt="RideMart Logo" className="footer-logo-img" />
             </Link>
             <p className="footer-description">
               The most trusted car marketplace for buying, selling, and renting premium vehicles with ease and security.

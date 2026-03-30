@@ -64,7 +64,7 @@ function Navbar() {
       <div className="container">
         <div className="nav-wrapper">
           <Link to="/" className="logo" onClick={closeMenu}>
-            <img src="/logo-brand.jpg" alt="RideMart Logo" className="logo-img" />
+            <img src="/logo-brand.png" alt="RideMart Logo" className="logo-img" />
           </Link>
 
           <div className={`nav-menu ${isOpen ? 'active' : ''}`}>

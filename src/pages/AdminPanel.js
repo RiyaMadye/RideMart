@@ -1817,7 +1817,7 @@ function AdminPanel() {
         <aside className="admin-nav-v5">
           <div className="nav-brand">
             <Link to="/" style={{display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit'}}>
-              <img src="/logo-brand.jpg" alt="RideMart" style={{width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover'}} />
+              <img src="/logo-brand.png" alt="RideMart" style={{width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover'}} />
               <h2 style={{fontFamily: 'Syne, sans-serif', fontWeight: 800, letterSpacing: '2px', fontSize: '1.2rem', margin: 0}}>RIDEMART</h2>
             </Link>
           </div>

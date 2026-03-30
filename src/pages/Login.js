@@ -165,7 +165,7 @@ function Login() {
         {/* ── Left Panel ── */}
         <div className="auth-panel auth-left">
           <Link to="/" className="auth-logo">
-            <img src="/logo-brand.jpg" alt="RideMart Logo" style={{height: '50px', borderRadius: '8px'}} />
+            <img src="/logo-brand.png" alt="RideMart Logo" style={{height: '50px', borderRadius: '8px'}} />
           </Link>
           <div className="panel-content">
             <div className="car-icon-big">

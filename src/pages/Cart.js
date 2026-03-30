@@ -87,7 +87,7 @@ function Cart() {
       currency: "INR",
       name: "RideMart",
       description: `Payment for ${cartItems.length} car(s)`,
-      image: "/logo-brand.jpg",
+      image: "/logo-brand.png",
       handler: async (response) => {
         // This function is called on successful payment
         try {

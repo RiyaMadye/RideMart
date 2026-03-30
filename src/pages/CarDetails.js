@@ -98,7 +98,7 @@ function CarDetails() {
       currency: "INR",
       name: "RideMart",
       description: description,
-      image: car.imageUrl || "/logo-brand.jpg",
+      image: car.imageUrl || "/logo-brand.png",
       handler: async (response) => {
         try {
           let docRef;
