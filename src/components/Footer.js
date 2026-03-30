@@ -65,7 +65,7 @@ function Footer() {
         <div className="footer-bottom">
           <p>&copy; {currentYear} RideMart. All rights reserved.</p>
           <div className="social-links">
-        {/*    <a href="#" className="social-link"><FaFacebook /></a>  */}
+            {/*    <a href="#" className="social-link"><FaFacebook /></a>  */}
             <a href="https://wa.me/918591700623" className="social-link"><FaWhatsapp /></a>
             <a href="https://www.instagram.com/riyu_27_v/" className="social-link"><FaInstagram /></a>
             <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-link"><FaLinkedin /></a>
