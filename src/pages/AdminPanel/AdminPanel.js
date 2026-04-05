@@ -1004,13 +1004,13 @@ function AdminPanel() {
           <div className="settings-section">
             <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-white)' }}>Database Maintenance</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Repair data consistency and sync user names across collections.</p>
-            
+
             <div className="alert-v5 info" style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', color: '#93c5fd', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(59,130,246,0.2)' }}>
               <strong>Sync User Names:</strong> This utility will scan your Payments, Bookings, and Orders. For each record, it will find the corresponding user and update the record with their current Full Name.
             </div>
 
-            <button 
-              className="add-btn-v5" 
+            <button
+              className="add-btn-v5"
               onClick={handleSyncNames}
               disabled={isSeeding}
               style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', width: 'auto' }}
@@ -1816,9 +1816,9 @@ function AdminPanel() {
         {/* ── Persistent Sidebar ── */}
         <aside className="admin-nav-v5">
           <div className="nav-brand">
-            <Link to="/" style={{display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit'}}>
-              <img src="/logo-brand.png" alt="RideMart" style={{width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover'}} />
-              <h2 style={{fontFamily: 'Syne, sans-serif', fontWeight: 800, letterSpacing: '2px', fontSize: '1.2rem', margin: 0}}>RIDEMART</h2>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit' }}>
+              <img src="/logo-brand.png" alt="RideMart" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+              <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, letterSpacing: '2px', fontSize: '1.2rem', margin: 0 }}>RIDEMART</h2>
             </Link>
           </div>
           <nav className="nav-menu-v5">
