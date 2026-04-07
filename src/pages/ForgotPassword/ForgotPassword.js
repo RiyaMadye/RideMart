@@ -4,7 +4,7 @@ import { auth, db } from '../../firebase/config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { addDoc, collection, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { FaEnvelope, FaExclamationTriangle, FaCheckCircle, FaArrowLeft, FaKey, FaLock, FaEye, FaEyeSlash, FaPaperPlane } from 'react-icons/fa';
-import './Auth.css';
+import '../Auth.css';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');

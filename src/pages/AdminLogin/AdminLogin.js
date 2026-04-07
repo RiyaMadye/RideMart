@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase/config';
 import { FaUserShield, FaLock, FaEnvelope, FaExclamationTriangle, FaDatabase, FaShieldAlt, FaKey } from 'react-icons/fa';
-import './Auth.css';
+import '../Auth.css';
 
 function AdminLogin() {
   const navigate = useNavigate();

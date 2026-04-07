@@ -9,7 +9,7 @@ import {
 import { doc, addDoc, collection, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase/config';
 import { FaCar, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaExclamationTriangle } from 'react-icons/fa';
-import './Auth.css';
+import '../Auth.css';
 
 function Login() {
   const navigate = useNavigate();

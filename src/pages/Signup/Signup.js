@@ -10,7 +10,7 @@ import {
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebase/config';
 import { FaRocket, FaCheckCircle, FaUser, FaEnvelope, FaPhone, FaLock, FaKey, FaEye, FaEyeSlash, FaExclamationTriangle } from 'react-icons/fa';
-import './Auth.css';
+import '../Auth.css';
 import SaveLoginPopup from '../Login/SaveLoginPopup'; // Import the new popup component
 
 function Signup() {
