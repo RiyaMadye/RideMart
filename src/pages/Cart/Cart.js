@@ -3,7 +3,7 @@ import { collection, getDocs, deleteDoc, doc, getDoc, query, where, addDoc, serv
 import { db } from '../../firebase/config';
 import { getAuth } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
-import useRazorpay from '../useRazorpay';
+import useRazorpay from '../../hooks/useRazorpay';
 import { FaShoppingCart, FaCalendarAlt, FaRoad, FaCogs, FaUser, FaEnvelope, FaTrash } from 'react-icons/fa';
 import './Cart.css';
 

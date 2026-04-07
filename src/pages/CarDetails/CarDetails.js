@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { getAuth } from 'firebase/auth';
-import useRazorpay from '../useRazorpay';
+import useRazorpay from '../../hooks/useRazorpay';
 import { FaCalendarAlt, FaRoad, FaCogs, FaGasPump, FaPalette, FaPhone, FaArrowLeft, FaShoppingCart, FaWhatsapp, FaCreditCard, FaMapMarkerAlt } from 'react-icons/fa';
 import './CarDetails.css';
 
