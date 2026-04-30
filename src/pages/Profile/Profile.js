@@ -277,6 +277,14 @@ function Profile() {
               <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>* Valid driving license is required for rentals.</p>
             </div>
 
+            {!isEditing && (
+              <div style={{ marginTop: '2rem', textAlign: 'center', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <button className="btn btn-primary" onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsEditing(true); }} style={{ padding: '0.75rem 2rem', fontSize: '1.1rem' }}>
+                  <FaEdit /> Edit Profile Details
+                </button>
+              </div>
+            )}
+
             <div className="security-section">
               <h3>Security</h3>
               <div className="detail-group">
