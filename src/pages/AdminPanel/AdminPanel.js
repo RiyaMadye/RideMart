@@ -131,7 +131,7 @@ function AdminPanel() {
   const [paymentsSearchQuery, setPaymentsSearchQuery] = useState('');
 
   // Document Viewer State
-  const [docModalOpen, setDocModalOpen] = useState(false);
+  // (docModalOpen was unused)
   const [activeDocs, setActiveDocs] = useState(null); // { title: '', docs: { name: url } }
 
   // Helper to find a user's name by ID or Email
@@ -158,7 +158,7 @@ function AdminPanel() {
         const batch = writeBatch(db);
         let batchCount = 0;
 
-        snapshot.docs.forEach(docSnap => {
+        for (const docSnap of snapshot.docs) {
           const data = docSnap.data();
           const userId = data.userId;
           const userEmail = data.userEmail || data.customerEmail || data.renterEmail || data.buyerInfo?.email;
@@ -183,7 +183,7 @@ function AdminPanel() {
               updatedCount++;
             }
           }
-        });
+        }
 
         if (batchCount > 0) {
           await batch.commit();
