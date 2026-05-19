@@ -90,7 +90,10 @@ function Signup() {
       case 'auth/weak-password':          return 'Password is too weak. Use at least 6 characters.';
       case 'auth/network-request-failed': return 'Network error. Please check your connection.';
       case 'auth/too-many-requests':      return 'Too many attempts. Please try again later.';
-      default:                            return 'Signup failed. Please try again.';
+      case 'auth/operation-not-allowed':  return 'Google Sign-In is not enabled in Firebase. Please enable it.';
+      case 'auth/unauthorized-domain':    return 'This domain is not authorized for Google Sign-In in Firebase.';
+      case 'auth/popup-blocked':          return 'Sign-in popup was blocked by your browser.';
+      default:                            return `Signup failed (${code}). Please try again.`;
     }
   };
 
@@ -227,6 +230,7 @@ function Signup() {
       handleAuthSuccess(userCredential);
 
     } catch (err) {
+      console.error("Google Signup Error:", err);
       // Don't show error if user just closed the popup
       if (err.code !== 'auth/popup-closed-by-user') {
         setError(getFriendlyError(err.code));

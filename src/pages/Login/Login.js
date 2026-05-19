@@ -69,7 +69,10 @@ function Login() {
       case 'auth/user-disabled':          return 'This account has been disabled. Contact support.';
       case 'auth/invalid-credential':     return 'Invalid email or password. Please try again.';
       case 'auth/network-request-failed': return 'Network error. Please check your connection.';
-      default:                            return 'Login failed. Please try again.';
+      case 'auth/operation-not-allowed':  return 'Google Sign-In is not enabled in Firebase. Please enable it.';
+      case 'auth/unauthorized-domain':    return 'This domain is not authorized for Google Sign-In in Firebase.';
+      case 'auth/popup-blocked':          return 'Sign-in popup was blocked by your browser.';
+      default:                            return `Login failed (${code}). Please try again.`;
     }
   };
 
@@ -139,6 +142,7 @@ function Login() {
       // On successful login, navigate to the home page.
       navigate('/');
     } catch (err) {
+      console.error("Google Login Error:", err);
       setGoogleLoading(false);
       if (err.code !== 'auth/popup-closed-by-user') {
         setError(getFriendlyError(err.code));
