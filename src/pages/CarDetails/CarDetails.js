@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { getAuth } from 'firebase/auth';
 import useRazorpay from '../../hooks/useRazorpay';
@@ -144,6 +144,12 @@ function CarDetails() {
               paymentStatus: 'success',
               timestamp: serverTimestamp(),
             });
+
+            // Update car status to prevent further bookings/purchases
+            await updateDoc(doc(db, 'cars', car.id), { 
+              status: isRental ? 'rented' : 'sold' 
+            });
+            
           } catch (postPayError) {
             console.error("Payment succeeded but logging failed:", postPayError);
           }
@@ -230,6 +236,23 @@ function CarDetails() {
             <div className="details-header">
               <p className="car-brand" style={{fontSize: '1.2rem', marginBottom: '0.5rem'}}>{car.brand}</p>
               <h1 className="car-title">{car.model}</h1>
+              
+              {(car.status === 'sold' || car.status === 'rented') && (
+                <div className="sold-out-badge" style={{
+                  display: 'inline-block',
+                  background: 'var(--primary-color, #c21807)',
+                  color: 'white',
+                  padding: '4px 12px',
+                  borderRadius: '20px',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  marginTop: '0.5rem'
+                }}>
+                  {car.status === 'sold' ? 'SOLD OUT' : 'CURRENTLY BOOKED'}
+                </div>
+              )}
+
               <div className="price-section">
                 <span className="price">₹{car.price?.toLocaleString()}</span>
                 {car.dailyRate && <span className="price-period" style={{fontSize: '1rem', color: 'var(--text-muted)'}}>/day</span>}
@@ -258,8 +281,15 @@ function CarDetails() {
             </div>
 
             <div className="action-buttons">
-              <button className="btn btn-primary cart-btn-large" onClick={handleBuyOrBook} disabled={isProcessing}>
-                {isProcessing ? 'Processing...' : (car.dailyRate ? <><FaCreditCard /> Book Now</> : <><FaShoppingCart /> Buy Now</>)}
+              <button 
+                className="btn btn-primary cart-btn-large" 
+                onClick={handleBuyOrBook} 
+                disabled={isProcessing || car.status === 'sold' || car.status === 'rented'}
+                style={(car.status === 'sold' || car.status === 'rented') ? { background: '#666', cursor: 'not-allowed', opacity: 0.7 } : {}}
+              >
+                {isProcessing ? 'Processing...' : 
+                 (car.status === 'sold' || car.status === 'rented') ? 'Not Available' :
+                 (car.dailyRate ? <><FaCreditCard /> Book Now</> : <><FaShoppingCart /> Buy Now</>)}
               </button>
               <button className="btn btn-secondary contact-btn-large" onClick={() => setShowContactModal(true)}>
                 <FaPhone /> Contact Seller
